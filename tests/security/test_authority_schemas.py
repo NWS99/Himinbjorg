@@ -99,10 +99,26 @@ class AuthoritySchemaTests(unittest.TestCase):
         with self.assertRaisesRegex(ContractError, "vocabulary enum is required"):
             validate_schema_artifact(value, "capability.schema.json", self.digest)
 
-    def test_type_accepts_string_or_string_array(self):
+    def test_schema_security_keywords_are_semantically_locked(self):
+        mutations = []
+        value = self.schema("capability.schema.json")
+        del value["properties"]["schema_version"]["const"]
+        mutations.append(("capability.schema.json", value))
+        value = self.schema("capability.schema.json")
+        value["properties"]["authority_digest"]["pattern"] = ".*"
+        mutations.append(("capability.schema.json", value))
+        value = self.schema("constraints.schema.json")
+        value["properties"]["use_limit"]["minimum"] = 0
+        mutations.append(("constraints.schema.json", value))
+        for name, mutated in mutations:
+            with self.subTest(name=name), self.assertRaisesRegex(ContractError, "schema semantic digest mismatch"):
+                validate_schema_artifact(mutated, name, self.digest)
+
+    def test_schema_property_addition_is_semantic_drift(self):
         value = self.schema()
         value["properties"]["nullable_note"] = {"type": ["string", "null"]}
-        validate_schema_artifact(value, "authority.schema.json", self.digest)
+        with self.assertRaisesRegex(ContractError, "schema semantic digest mismatch"):
+            validate_schema_artifact(value, "authority.schema.json", self.digest)
 
     def test_schema_rejects_invalid_type_array(self):
         value = self.schema()

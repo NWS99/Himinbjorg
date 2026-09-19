@@ -48,6 +48,15 @@ EXPECTED_REFS = {
     },
     "capability.schema.json": {"resource": "urn:himinbjorg:security:v1:canonical-resource"},
 }
+EXPECTED_SCHEMA_DIGESTS = {
+    "authority.schema.json": "1a4423e585521f29bb0af519a33e62aea9fb6007a8c260cc29fd7817387554ba",
+    "canonical-resource.schema.json": "0e43735d0db6a013a2098e55579ce2f5f3919837744f6540c406f68742266ff6",
+    "capability.schema.json": "7389930d2ede8fc82cba72d7abd7e56425b428e2898ae5a25b4553638d7a1bf3",
+    "constraints.schema.json": "0bd83e435b54bd2a7d4ea936b1a982da16e7cca2ac20feabd102a432b992b5b2",
+    "principal.schema.json": "5630e49375e448886ddb0ab2feadb51546defbd1995dec7c422ff277487d8de1",
+    "provenance.schema.json": "78dd129dea68d1d6db114f7f03b2edbef715837f8f5c8abf50b615a066457e7e",
+    "security-domain.schema.json": "1e0263dc9e28a05a41208bcb9c584a29b60e49d20678ff9868d1590038b3e28f",
+}
 SCHEMA_VERSION = "1.0.0"
 POLICY_STATES = {"allow", "ask", "deny"}
 CAPABILITIES = {
@@ -224,6 +233,8 @@ def validate_schema_artifact(value: dict[str, Any], name: str, digest: str) -> N
     for property_name, expected_ref in EXPECTED_REFS.get(name, {}).items():
         require(value["properties"].get(property_name) == {"$ref": expected_ref}, f"{name}: {property_name} reference drift")
     _check_schema_keywords(value, name)
+    semantic_digest = hashlib.sha256(stable_json(value).encode("utf-8")).hexdigest()
+    require(semantic_digest == EXPECTED_SCHEMA_DIGESTS[name], f"{name}: schema semantic digest mismatch")
 
 
 def _validate_instance_fields(value: Any, name: str, required: set[str], allowed: set[str]) -> dict[str, Any]:
