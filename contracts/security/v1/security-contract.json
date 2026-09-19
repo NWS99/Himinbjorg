@@ -1,0 +1,203 @@
+{
+  "contract_version": "1.0.0",
+  "status": "frozen",
+  "owner_issue": "N-52",
+  "authority_vector": [
+    "principal",
+    "action",
+    "canonical_resource",
+    "constraints",
+    "security_domain",
+    "provenance_requirements",
+    "policy_version"
+  ],
+  "authority_semantics": {
+    "decision_values": ["allow", "ask", "deny"],
+    "default_decision": "deny",
+    "unknown_or_ambiguous": "deny",
+    "delegation_operator": "intersection",
+    "composition_operator": "intersection",
+    "communication_grants_authority": false,
+    "capability_is_authority": false,
+    "approval_is_authority": false,
+    "secret_ref_is_authority": false,
+    "risk_class_is_authority": false
+  },
+  "principal_classes": [
+    {"id": "human", "authoritative_for": ["goal_intent", "exact_approval"], "security_authority": "bounded_by_hard_policy"},
+    {"id": "control_plane_service", "authoritative_for": ["declared_deterministic_responsibility"], "security_authority": "service_scoped"},
+    {"id": "cognition_worker", "authoritative_for": [], "security_authority": "none"},
+    {"id": "execution_adapter", "authoritative_for": ["valid_decision_or_warrant_execution"], "security_authority": "no_expansion"},
+    {"id": "gate_runner", "authoritative_for": ["exact_verified_claim"], "security_authority": "claim_scoped"},
+    {"id": "credential_broker", "authoritative_for": ["secret_custody", "grant_matching", "verified_consumer_launch"], "security_authority": "broker_scoped"},
+    {"id": "release_controller", "authoritative_for": ["validated_release_effect"], "security_authority": "release_scoped"}
+  ],
+  "action_classes": [
+    {"id": "read", "effect": "observe"},
+    {"id": "workspace_write", "effect": "mutate_scoped_workspace"},
+    {"id": "sandbox_execute", "effect": "execute_isolated"},
+    {"id": "host_execute", "effect": "execute_typed_host_action"},
+    {"id": "network_request", "effect": "send_to_bound_destination"},
+    {"id": "external_send", "effect": "identity_bearing_external_write"},
+    {"id": "publish", "effect": "public_or_registry_write"},
+    {"id": "delete", "effect": "destructive_mutation"},
+    {"id": "credential_activate", "effect": "launch_verified_consumer"},
+    {"id": "model_request", "effect": "brokered_provider_call"},
+    {"id": "attest", "effect": "create_exact_verified_claim"},
+    {"id": "release", "effect": "staging_or_production_change"}
+  ],
+  "resource_types": [
+    {"id": "artifact", "canonical_identity": "content_digest"},
+    {"id": "filesystem_path", "canonical_identity": "root_generation_and_resolved_path"},
+    {"id": "workspace", "canonical_identity": "workspace_id_and_generation"},
+    {"id": "process", "canonical_identity": "principal_pid_uid_and_binary_digest"},
+    {"id": "network_destination", "canonical_identity": "scheme_host_port_and_resolution_binding"},
+    {"id": "external_identity", "canonical_identity": "provider_account_and_target"},
+    {"id": "secret_ref", "canonical_identity": "opaque_broker_reference"},
+    {"id": "consumer_profile", "canonical_identity": "profile_id_and_digest"},
+    {"id": "model_provider", "canonical_identity": "provider_model_region_and_policy"},
+    {"id": "policy", "canonical_identity": "policy_digest"},
+    {"id": "candidate", "canonical_identity": "candidate_digest"},
+    {"id": "release_target", "canonical_identity": "environment_service_and_version"}
+  ],
+  "capability_classes": [
+    {"id": "sandbox_shell", "default_policy": "ask", "hard_boundary": "isolation_backend"},
+    {"id": "host_exec", "default_policy": "deny", "hard_boundary": "typed_host_broker"},
+    {"id": "host_read", "default_policy": "deny", "hard_boundary": "canonical_scoped_reader"},
+    {"id": "user_write", "default_policy": "deny", "hard_boundary": "pdp_pep"},
+    {"id": "network_access", "default_policy": "deny", "hard_boundary": "destination_egress_policy"},
+    {"id": "credential_activate", "default_policy": "deny", "hard_boundary": "credential_broker"},
+    {"id": "privileged_action", "default_policy": "deny", "hard_boundary": "separate_privileged_helper"},
+    {"id": "generic_host_shell", "default_policy": "deny", "hard_boundary": "forbidden"}
+  ],
+  "security_domains": [
+    {"id": "research", "execution": "isolated", "network": "policy_bounded", "host_access": "none", "secrets": "none"},
+    {"id": "coding", "execution": "isolation_backend", "network": "deny_by_default", "host_access": "workspace_only", "secrets": "none"},
+    {"id": "host", "execution": "typed_host_broker", "network": "action_bounded", "host_access": "canonical_resource_only", "secrets": "none"},
+    {"id": "credential_consumer", "execution": "verified_consumer", "network": "destination_bound", "host_access": "none", "secrets": "sealed_delivery_only"},
+    {"id": "release", "execution": "release_controller", "network": "release_target_only", "host_access": "none", "secrets": "controller_custodied"}
+  ],
+  "provenance_classes": [
+    {"id": "user_authorized", "rank": 0},
+    {"id": "tool_verified", "rank": 1},
+    {"id": "agent_derived", "rank": 2},
+    {"id": "untrusted_external", "rank": 3}
+  ],
+  "provenance_semantics": {
+    "propagation": "sticky_max_exposure_with_causal_edges",
+    "llm_may_clear_taint": false,
+    "review_may_clear_taint": false,
+    "gate_effect": "exact_verified_claim_only",
+    "declassification": "typed_deterministic_rule_only"
+  },
+  "canonical_resource_requirements": [
+    "stable_resource_type",
+    "normalized_identity",
+    "symlink_and_path_resolution",
+    "url_and_dns_binding_when_applicable",
+    "pre_state_or_generation_binding_when_mutable",
+    "destination_and_egress_binding_when_networked"
+  ],
+  "constraint_classes": [
+    "argument_vector",
+    "executable_or_image_digest",
+    "working_directory",
+    "environment_allowlist",
+    "mounts",
+    "network_egress",
+    "secret_handles",
+    "time_and_use_limits",
+    "budget",
+    "idempotency_key",
+    "fencing_token",
+    "pre_state_digest"
+  ],
+  "exposure_levels": [
+    {"id": "X0", "meaning": "trusted_control_data_only"},
+    {"id": "X1", "meaning": "local_project_data"},
+    {"id": "X2", "meaning": "authenticated_or_mixed_trust_data"},
+    {"id": "X3", "meaning": "untrusted_external_instructions_or_artifacts"},
+    {"id": "X4", "meaning": "hostile_or_adversarial_content"}
+  ],
+  "consequence_levels": [
+    {"id": "C0", "meaning": "no_effect"},
+    {"id": "C1", "meaning": "ephemeral_isolated_effect"},
+    {"id": "C2", "meaning": "reversible_workspace_or_local_user_effect"},
+    {"id": "C3", "meaning": "external_identity_bearing_or_sensitive_effect"},
+    {"id": "C4", "meaning": "privileged_destructive_secret_or_production_effect"}
+  ],
+  "risk_levels": [
+    {"id": "P0", "meaning": "benign_read_only", "minimum_gate": "deterministic_policy"},
+    {"id": "P1", "meaning": "reversible_workspace_or_sandbox", "minimum_gate": "policy_and_audit"},
+    {"id": "P2", "meaning": "bounded_external_or_project_effect", "minimum_gate": "policy_and_independent_evidence"},
+    {"id": "P3", "meaning": "host_configuration_broad_egress_or_sensitive_effect", "minimum_gate": "review_and_human_approval"},
+    {"id": "P4", "meaning": "secret_account_security_control_destructive_or_production_effect", "minimum_gate": "default_deny_or_explicit_privileged_constitution_and_human_approval"}
+  ],
+  "risk_inputs": [
+    "action",
+    "canonical_resource_sensitivity",
+    "provenance_and_exposure",
+    "data_classification",
+    "secret_presence",
+    "destination_and_egress",
+    "blast_radius",
+    "reversibility",
+    "causal_workflow_history"
+  ],
+  "trust_boundaries": [
+    {"id": "worker_to_control_plane", "protocol": "authenticated_versioned_ipc", "fail_mode": "closed", "owner_issues": ["N-45", "N-87", "N-88"]},
+    {"id": "control_plane_to_execution", "protocol": "pdp_pep_and_exact_warrant", "fail_mode": "closed", "owner_issues": ["N-54", "N-58", "N-95"]},
+    {"id": "control_plane_to_model_provider", "protocol": "model_gateway", "fail_mode": "closed", "owner_issues": ["N-46", "N-90", "N-91"]},
+    {"id": "control_plane_to_credential_broker", "protocol": "authenticated_workload_api", "fail_mode": "closed", "owner_issues": ["N-39", "N-73", "N-76"]},
+    {"id": "human_to_credential_admin", "protocol": "separate_authenticated_admin_plane", "fail_mode": "closed", "owner_issues": ["N-39", "N-73"]},
+    {"id": "workspace_to_review", "protocol": "sealed_candidate_and_attestation", "fail_mode": "closed", "owner_issues": ["N-63", "N-66", "N-100"]},
+    {"id": "control_plane_to_release", "protocol": "signed_release_proposal", "fail_mode": "closed", "owner_issues": ["N-50", "N-67", "N-68"]}
+  ],
+  "hard_invariants": [
+    {"id": "INV-001", "statement": "Security decisions are enforced outside cognition workers.", "owner_issues": ["N-18", "N-54", "N-58"]},
+    {"id": "INV-002", "statement": "Communication transfers information and never authority.", "owner_issues": ["N-14", "N-15", "N-54"]},
+    {"id": "INV-003", "statement": "Delegated and composed authority is an intersection and can only narrow.", "owner_issues": ["N-20", "N-56", "N-57"]},
+    {"id": "INV-004", "statement": "No requester or producer can approve its own authority-bearing action or candidate.", "owner_issues": ["N-11", "N-63", "N-95"]},
+    {"id": "INV-005", "statement": "A capability, approval, risk class, SecretRef or message is never sufficient authority by itself.", "owner_issues": ["N-51", "N-54", "N-73"]},
+    {"id": "INV-006", "statement": "Ambiguous principal, resource, provenance, policy or execution state fails closed.", "owner_issues": ["N-25", "N-54", "N-97", "N-98"]},
+    {"id": "INV-007", "statement": "Privileged effects require an exact bounded decision and complete single-use warrant.", "owner_issues": ["N-58", "N-62", "N-95"]},
+    {"id": "INV-008", "statement": "Review, gates and integration bind to an immutable candidate and exact digests.", "owner_issues": ["N-63", "N-66", "N-100"]},
+    {"id": "INV-009", "statement": "Cognition workers remain replaceable, unprivileged and outside the trusted computing base.", "owner_issues": ["N-18", "N-27", "N-28"]},
+    {"id": "INV-010", "statement": "Original provenance remains sticky; verification creates only a narrow exact claim.", "owner_issues": ["N-15", "N-47", "N-59", "N-60"]},
+    {"id": "INV-011", "statement": "Workers never hold provider credentials or call providers outside ModelGateway.", "owner_issues": ["N-46", "N-90", "N-91"]},
+    {"id": "INV-012", "statement": "Secret custody and human administration remain outside swarmd and worker processes.", "owner_issues": ["N-39", "N-73", "N-76"]},
+    {"id": "INV-013", "statement": "Credential activation requires an exact human grant and verified destination-bound consumer.", "owner_issues": ["N-73", "N-76", "N-78"]},
+    {"id": "INV-014", "statement": "Post-dispatch ambiguity becomes UNKNOWN and is reconciled without blind retry.", "owner_issues": ["N-25", "N-95", "N-98"]},
+    {"id": "INV-015", "statement": "Policy, identity, runtime and supply-chain inputs are versioned and digest-bound.", "owner_issues": ["N-26", "N-45", "N-47"]}
+  ],
+  "attacker_paths": [
+    {"id": "THREAT-001", "name": "cross_agent_prompt_injection", "controls": ["sticky_provenance", "communication_no_authority", "runtime_policy"], "owner_issues": ["N-15", "N-59", "N-60"]},
+    {"id": "THREAT-002", "name": "capability_laundering_or_composition", "controls": ["authority_intersection", "lineage", "workflow_flow_gate"], "owner_issues": ["N-20", "N-56", "N-61"]},
+    {"id": "THREAT-003", "name": "requester_controlled_or_self_review", "controls": ["independent_reviewer_selection", "immutable_candidate"], "owner_issues": ["N-11", "N-63", "N-95"]},
+    {"id": "THREAT-004", "name": "approval_or_warrant_replay", "controls": ["exact_request_digest", "expiry", "single_use", "fencing"], "owner_issues": ["N-62", "N-95", "N-96"]},
+    {"id": "THREAT-005", "name": "resource_alias_or_toctou", "controls": ["canonicalization", "pre_state_digest", "generation_binding"], "owner_issues": ["N-54", "N-58", "N-65"]},
+    {"id": "THREAT-006", "name": "secret_plus_arbitrary_egress", "controls": ["verified_consumer", "destination_binding", "separate_credential_broker"], "owner_issues": ["N-73", "N-76", "N-78"]},
+    {"id": "THREAT-007", "name": "secret_reference_enumeration", "controls": ["generic_unavailable", "non_enumerable_workload_api"], "owner_issues": ["N-73", "N-76"]},
+    {"id": "THREAT-008", "name": "consumer_or_binary_substitution", "controls": ["consumer_digest", "workload_identity", "route_binding"], "owner_issues": ["N-73", "N-76", "N-78"]},
+    {"id": "THREAT-009", "name": "same_uid_process_or_proc_leakage", "controls": ["separate_identity", "sealed_delivery", "redaction"], "owner_issues": ["N-73", "N-84", "N-86"]},
+    {"id": "THREAT-010", "name": "worker_direct_provider_access", "controls": ["model_gateway", "deny_direct_egress", "broker_credentials"], "owner_issues": ["N-46", "N-90", "N-91"]},
+    {"id": "THREAT-011", "name": "crash_retry_duplicate_effect", "controls": ["unknown_state", "idempotency", "reconciliation"], "owner_issues": ["N-25", "N-97", "N-98"]},
+    {"id": "THREAT-012", "name": "supply_chain_or_runtime_drift", "controls": ["content_addressed_manifest", "attestation", "pre_execution_verification"], "owner_issues": ["N-26", "N-47", "N-93"]}
+  ],
+  "security_goals": [
+    "least_authority_per_principal_and_run",
+    "deterministic_fail_closed_authorization",
+    "causal_provenance_and_non_amplification",
+    "exact_effect_review_and_auditability",
+    "secret_non_reveal_to_confined_agents",
+    "deterministic_recovery_without_llm_authority"
+  ],
+  "non_goals": [
+    "protection_from_compromised_kernel_or_root",
+    "protection_from_malicious_human_approved_raw_secret_consumer",
+    "multi_tenant_isolation_in_initial_local_product",
+    "proof_that_untrusted_content_is_free_of_prompt_injection",
+    "universal_rollback_for_external_effects",
+    "authorization_by_llm_confidence_or_review_alone"
+  ]
+}
