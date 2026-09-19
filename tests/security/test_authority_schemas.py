@@ -29,19 +29,8 @@ class AuthoritySchemaTests(unittest.TestCase):
         cls.contract = ROOT / "contracts/security/v1/security-contract.json"
         cls.digest = hashlib.sha256(cls.contract.read_bytes()).hexdigest()
 
-    def schema(self):
-        return {
-            "schema_version": "1.0.0",
-            "source_contract_digest": self.digest,
-            "type": "object",
-            "additionalProperties": False,
-            "properties": {
-                "capability": {"type": "string", "enum": sorted(CAPABILITIES)},
-                "resource_type": {"type": "string", "enum": sorted(RESOURCE_TYPES)},
-                "policy_state": {"type": "string", "enum": ["allow", "ask", "deny"]},
-            },
-            "required": ["capability", "resource_type", "policy_state"],
-        }
+    def schema(self, name="authority.schema.json"):
+        return json.loads((ROOT / "contracts/security/v1" / name).read_text(encoding="utf-8"))
 
     def request(self, **changes):
         value = {"source_contract_digest": self.digest, "capability": "host_read", "resource_type": "workspace", "security_domain": "coding", "policy_state": "allow"}
@@ -91,14 +80,24 @@ class AuthoritySchemaTests(unittest.TestCase):
         self.assertEqual(stable_json({"a": 1, "b": 2}), stable_json({"b": 2, "a": 1}))
 
     def test_unknown_capability_and_resource_fail_closed(self):
-        value = self.schema()
+        value = self.schema("capability.schema.json")
         value["properties"]["capability"]["enum"].append("root_shell")
         with self.assertRaisesRegex(ContractError, "capability vocabulary"):
-            validate_schema_artifact(value, "authority.schema.json", self.digest)
-        value = self.schema()
+            validate_schema_artifact(value, "capability.schema.json", self.digest)
+        value = self.schema("canonical-resource.schema.json")
         value["properties"]["resource_type"]["enum"].append("everything")
         with self.assertRaisesRegex(ContractError, "resource vocabulary"):
-            validate_schema_artifact(value, "authority.schema.json", self.digest)
+            validate_schema_artifact(value, "canonical-resource.schema.json", self.digest)
+
+    def test_schema_required_fields_and_vocabularies_cannot_be_weakened(self):
+        value = self.schema("capability.schema.json")
+        value["required"].remove("authority_digest")
+        with self.assertRaisesRegex(ContractError, "required fields drift"):
+            validate_schema_artifact(value, "capability.schema.json", self.digest)
+        value = self.schema("capability.schema.json")
+        del value["properties"]["capability"]["enum"]
+        with self.assertRaisesRegex(ContractError, "vocabulary enum is required"):
+            validate_schema_artifact(value, "capability.schema.json", self.digest)
 
     def test_type_accepts_string_or_string_array(self):
         value = self.schema()
@@ -197,6 +196,28 @@ class AuthoritySchemaTests(unittest.TestCase):
         child["authority"]["constraints"]["fencing_token"] = "research-child-provenance-fence"
         child["authority"]["parent_authority_digest"] = authority_digest(parent["authority"])
         child["authority"]["provenance_requirements"]["exposure"] = "X2"
+        child["capability"]["authority_digest"] = authority_digest(child["authority"])
+        self.assertEqual(evaluate_authority(child, digest=self.digest, delegated=parent, replay_state=set(), freshness_context=state), "deny")
+
+    def test_delegation_cannot_rewrite_principal(self):
+        parent, state = self.full_case("research.json", 0)
+        child = copy.deepcopy(parent)
+        child["authority"]["constraints"]["idempotency_key"] = "research-child-principal"
+        child["authority"]["constraints"]["fencing_token"] = "research-child-principal-fence"
+        child["authority"]["parent_authority_digest"] = authority_digest(parent["authority"])
+        child["authority"]["principal"] = {"id": "attacker-controlled", "class": "release_controller"}
+        child["capability"]["authority_digest"] = authority_digest(child["authority"])
+        self.assertEqual(evaluate_authority(child, digest=self.digest, delegated=parent, replay_state=set(), freshness_context=state), "deny")
+
+    def test_delegation_cannot_drop_parent_budget(self):
+        parent, state = self.full_case("research.json", 0)
+        parent["authority"]["constraints"]["budget"] = 10
+        parent["capability"]["authority_digest"] = authority_digest(parent["authority"])
+        child = copy.deepcopy(parent)
+        child["authority"]["constraints"]["idempotency_key"] = "research-child-budget"
+        child["authority"]["constraints"]["fencing_token"] = "research-child-budget-fence"
+        del child["authority"]["constraints"]["budget"]
+        child["authority"]["parent_authority_digest"] = authority_digest(parent["authority"])
         child["capability"]["authority_digest"] = authority_digest(child["authority"])
         self.assertEqual(evaluate_authority(child, digest=self.digest, delegated=parent, replay_state=set(), freshness_context=state), "deny")
 

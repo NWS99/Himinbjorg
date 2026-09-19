@@ -29,6 +29,25 @@ SCHEMA_NAMES = (
     "provenance.schema.json",
     "security-domain.schema.json",
 )
+EXPECTED_REQUIRED_FIELDS = {
+    "authority.schema.json": {"schema_version", "decision", "principal", "action", "canonical_resource", "constraints", "security_domain", "provenance_requirements", "policy_version"},
+    "capability.schema.json": {"schema_version", "capability", "domain", "resource", "authority_digest"},
+    "canonical-resource.schema.json": {"schema_version", "resource_type", "identity", "identity_digest", "generation"},
+    "constraints.schema.json": {"arguments", "working_directory", "environment_allowlist", "network_egress", "time_limit_seconds", "use_limit", "idempotency_key", "fencing_token"},
+    "principal.schema.json": {"id", "class"},
+    "provenance.schema.json": {"schema_version", "minimum_class", "exposure", "causal_digests", "taint_sticky"},
+    "security-domain.schema.json": {"schema_version", "domain", "parent_domain"},
+}
+EXPECTED_REFS = {
+    "authority.schema.json": {
+        "principal": "urn:himinbjorg:security:v1:principal",
+        "canonical_resource": "urn:himinbjorg:security:v1:canonical-resource",
+        "constraints": "urn:himinbjorg:security:v1:constraints",
+        "security_domain": "urn:himinbjorg:security:v1:security-domain",
+        "provenance_requirements": "urn:himinbjorg:security:v1:provenance",
+    },
+    "capability.schema.json": {"resource": "urn:himinbjorg:security:v1:canonical-resource"},
+}
 SCHEMA_VERSION = "1.0.0"
 POLICY_STATES = {"allow", "ask", "deny"}
 CAPABILITIES = {
@@ -141,7 +160,8 @@ def _check_enum_vocabulary(location: str, key: str, child: dict[str, Any]) -> No
         "exposure": EXPOSURES,
     }
     allowed = vocabularies.get(key)
-    if allowed is not None and "enum" in child:
+    if allowed is not None:
+        require("enum" in child, f"{location}: {key} vocabulary enum is required")
         require(isinstance(child["enum"], list) and all(isinstance(item, str) for item in child["enum"]), f"{location}: {key} vocabulary must be a string list")
         label = "resource" if key == "resource_type" else key
         require(set(child["enum"]) == allowed, f"{location}: {label} vocabulary drift")
@@ -192,13 +212,17 @@ def _check_schema_keywords(node: Any, location: str) -> None:
 
 
 def validate_schema_artifact(value: dict[str, Any], name: str, digest: str) -> None:
+    require(name in EXPECTED_REQUIRED_FIELDS, f"{name}: unknown schema artifact")
     require(value.get("schema_version") == SCHEMA_VERSION, f"{name}: unknown schema_version")
     require(value.get("source_contract_digest") == digest, f"{name}: source-contract digest mismatch")
     require(value.get("type") == "object", f"{name}: root type must be object")
     require(value.get("additionalProperties") is False, f"{name}: root must be closed")
     require(isinstance(value.get("properties"), dict), f"{name}: properties must be present")
     require(isinstance(value.get("required"), list), f"{name}: required must be present")
+    require(set(value["required"]) == EXPECTED_REQUIRED_FIELDS[name], f"{name}: required fields drift")
     require(set(value["required"]).issubset(value["properties"]), f"{name}: required field is undefined")
+    for property_name, expected_ref in EXPECTED_REFS.get(name, {}).items():
+        require(value["properties"].get(property_name) == {"$ref": expected_ref}, f"{name}: {property_name} reference drift")
     _check_schema_keywords(value, name)
 
 
@@ -312,8 +336,9 @@ def _constraints_are_narrower(parent: dict[str, Any], child: dict[str, Any]) -> 
     for key in ("time_limit_seconds", "use_limit"):
         if child[key] > parent[key]:
             return False
-    if "budget" in parent and child.get("budget", parent["budget"]) > parent["budget"]:
-        return False
+    if "budget" in parent:
+        if "budget" not in child or child["budget"] > parent["budget"]:
+            return False
     return True
 
 
@@ -373,6 +398,10 @@ def _delegation_is_narrower(parent: dict[str, Any], child: dict[str, Any], polic
     # Provenance is sticky. Until the reviewed contract defines a typed
     # declassification/intersection rule, delegation may not rewrite it.
     if stable_json(child_authority["provenance_requirements"]) != stable_json(parent_authority["provenance_requirements"]):
+        return False
+    # N-110 has no reviewed delegatee-binding field. Cross-principal
+    # delegation therefore remains fail-closed rather than inferring one.
+    if stable_json(child_authority["principal"]) != stable_json(parent_authority["principal"]):
         return False
     parent_digest = authority_digest(parent_authority)
     if child_authority.get("parent_authority_digest") != parent_digest:

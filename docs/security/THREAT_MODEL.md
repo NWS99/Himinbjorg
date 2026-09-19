@@ -80,9 +80,11 @@ Constraints are first-class parts of authority, including exact arguments, execu
 
 The v1 implementation vocabulary is split into strict, closed-world schemas under
 `contracts/security/v1/`: `authority`, `capability`, `canonical-resource`,
-`constraints`, `security-domain`, `provenance`, and `principal`. Every artifact
-binds `schema_version` and policy version to `1.0.0`; unknown fields and versions
-are rejected. Canonical resources carry a typed identity digest and generation.
+`constraints`, `security-domain`, `provenance`, and `principal`. Every schema
+artifact binds version metadata to `1.0.0`; version-bearing instances use a closed
+`schema_version` field, while `principal` and `constraints` are bound by their
+enclosing versioned authority. Unknown fields and declared versions are rejected.
+Canonical resources carry a typed identity digest and generation.
 Constraints carry exact arguments, working directory, egress, limits, idempotency
 and fencing data. Provenance is sticky and communication never grants authority.
 

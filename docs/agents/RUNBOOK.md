@@ -33,7 +33,7 @@ No command is verified.
 - **Scope:** `contracts/security/v1/`, `scripts/validate_security_contract.py`, `scripts/validate_threat_model.py`, `tests/security/`.
 - **Prerequisites:** Python 3 standard library.
 - **Last verified:** 2026-09-19 on N-109 working tree based at `cf67786`.
-- **Expected result:** Seventy-six tests pass.
+- **Expected result:** Seventy-nine tests pass.
 - **Known side effects:** Python may create ignored `__pycache__` directories.
 
 ### N-110 versioned security artifacts
