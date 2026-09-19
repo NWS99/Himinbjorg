@@ -32,6 +32,8 @@ The Himinbjorg naming family is:
 
 Subsystem names are descriptive proposals only; they are not namespace reservations.
 
+The initial Himinbjorg screen found no direct product/category collision comparable to Wardline or Cordon. It did find a public `NorseArchitecture/Glitnir` planning repository that uses `Himinbjorg` for an identity component, plus non-software company/name references. Himinbjorg is therefore a materially better working name, not legally cleared or proven available. See [the repository search result](https://github.com/NorseArchitecture/Glitnir/blob/master/docs/Platform/plans/2026-06-28-migrations-framework-identity-schema.md).
+
 ## Method and evidence rules
 
 The screen used exact-name web searches, official package pages where indexed, public GitHub pages, official IP-office search entry points, and public domain pages. Results are timestamped at the report snapshot. A missing search result is recorded as **not established**, never as “available”. Search-engine results are discovery evidence; registry and IP-office pages are the authoritative follow-up locations.
@@ -122,13 +124,13 @@ All three pass a basic speakability screen, but none passes a high-confidence co
 
 ## Exact rename inventory (not executed)
 
-The repository currently contains both the public working label `Wardline` and the internal label `Secure Agent Runtime`; this mixed state is intentional until N-102 is approved.
+The repository now contains the approved public label `Himinbjorg` and the internal architecture label `Secure Agent Runtime`. Historical Wardline findings remain in this report to preserve the evidence behind the rejected candidate.
 
 | Surface | Current evidence / target after approval | Action only after human decision |
 |---|---|---|
 | Linear | Project `Secure Agent Runtime`; issues and branches use N- identifiers and the project name. | Rename project/display labels only; preserve issue history and identifiers. |
 | Notion | Architecture and positioning pages use `Secure Agent Runtime`; positioning page marks Wardline as working name. | Update canonical naming decision and linked pages through governed architecture/product process. |
-| Repository | `README.md` begins `# Wardline`; `docs/security/THREAT_MODEL.md` retains `Secure Agent Runtime` and says Wardline is provisional. | Align title, product prose and links; do not alter frozen security vocabulary casually. |
+| Repository | `README.md` begins `# Himinbjorg`; `docs/security/THREAT_MODEL.md` retains `Secure Agent Runtime` as the canonical internal architecture name. | Keep the public name and internal architecture name intentionally distinct; do not alter frozen security vocabulary casually. |
 | Rust package/workspace | No Cargo manifest exists in the current repository. | Reserve and publish only the human-approved namespace; update future `Cargo.toml` package/workspace names. |
 | Binaries/services | No runtime implementation or binary manifest exists. | Rename future `swarmd`, broker and helper display names only if the approved naming plan requires it; keep protocol identifiers versioned. |
 | Containers/OCI | No container configuration or image namespace exists. | Select approved image/repository namespace; do not reserve or publish during N-102. |
@@ -141,7 +143,7 @@ Rerun these exact checks before approval and append a new report version:
 
 1. Search exact names in GitHub, PyPI, npm, crates.io and Docker Hub using the linked search pages.
 2. Query the package registries directly with authenticated/read-only registry APIs where available and record HTTP status plus canonical project URL.
-3. Search Wardline, Ironweave and Cordon in EUIPO eSearch/TMview, DPMAregister and USPTO Trademark Search; export or screenshot exact hits.
+3. Search Himinbjorg in EUIPO eSearch/TMview, DPMAregister and USPTO Trademark Search; export or screenshot exact hits.
 4. Check candidate domains and sensible fallbacks with a registrar/RDAP source; do not infer availability from a parked or for-sale page.
 5. Repeat English/German spoken tests with target developers and record the exact prompt and responses.
 
