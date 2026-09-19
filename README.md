@@ -1,4 +1,4 @@
-# Wardline
+# Himinbjorg
 The trusted control plane for coding agents.
 
 The initial security vocabulary and threat model are documented in

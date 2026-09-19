@@ -3,17 +3,34 @@
 **Report version:** 1.0.0
 **Issue:** [N-102](https://linear.app/n-digital-solutions/issue/N-102/validate-product-name-namespaces-and-launch-identity)
 **Research snapshot:** 2026-09-19 (Europe/Berlin)
-**Status:** Decision requires human choice; no rename is authorized by this report.
+**Status:** Human decision recorded: ACCEPT Himinbjorg as the public repository/product name.
+
+> **Decision addendum (2026-09-19):** The repository owner selected **Himinbjorg** after the initial finalist screen. This addendum supersedes the earlier “BLOCKED FOR HUMAN CHOICE” outcome for the public name. It does not constitute trademark clearance, domain availability, or package-name reservation.
 
 ## Decision
 
-**BLOCKED FOR HUMAN CHOICE.** The three finalists are not materially clear enough for an autonomous acceptance:
+The initial finalist screen found that the three proposed names were not materially clear enough for autonomous acceptance:
 
 - **Wardline** has direct software collisions in the same problem space, including a published PyPI package, `wardline.dev`, and an AI-agent control-plane repository. The exact primary domain `wardline.com` is listed for sale, not shown as an unregistered domain.
 - **Cordon** has direct and substantial collisions in agent security, credential containment and MCP policy, as well as an occupied PyPI package and several public GitHub projects.
 - **Ironweave** has a credible existing technology/project identity and the `ironweave.io` domain footprint. The available evidence is less directly adjacent than the Wardline and Cordon collisions, but it is not a clean slate.
 
-This is a collision screen, not legal clearance. A human owner must choose whether to retain Wardline with an explicit coexistence/legal-risk decision, investigate a new name, or commission professional clearance. Until that choice is recorded, the internal/project name remains **Secure Agent Runtime** and no repository, package, domain, Linear, Notion, binary, container or documentation rename should be performed.
+This is a collision screen, not legal clearance. The human owner has now selected **Himinbjorg**, a new Norse-mythology-based umbrella name outside the initial finalist set. The internal architecture name remains **Secure Agent Runtime**. No package reservation, trademark filing, domain purchase or production DNS change is implied.
+
+The Himinbjorg naming family is:
+
+| Scope | Name |
+|---|---|
+| Public repository/product | `Himinbjorg` |
+| Identity and ingress | `Heimdall` |
+| Authenticated IPC/transport | `Bifrost` |
+| Knowledge/evidence | `Mimisbrunnr` |
+| Provenance/state | `Urdarbrunnr` |
+| Alerts and irreversible events | `Gjallarhorn` |
+| Privileged control services | `Asgard` |
+| Workspaces and project execution | `Midgard` |
+
+Subsystem names are descriptive proposals only; they are not namespace reservations.
 
 ## Method and evidence rules
 
@@ -130,4 +147,4 @@ Rerun these exact checks before approval and append a new report version:
 
 ## Conclusion
 
-The evidence is sufficient to reject autonomous acceptance of all three current finalists. **Cordon** is disqualified by direct category collisions. **Wardline** has direct collisions in both the intended product category and the Python/package/web namespace. **Ironweave** is the least crowded finalist in the captured software search, but its existing technology identity and domain footprint require a human/legal decision. The correct issue outcome is therefore **BLOCKED FOR HUMAN CHOICE**, with no irreversible rename or registration performed.
+The initial evidence rejects autonomous acceptance of Wardline, Cordon and Ironweave. The human owner selected **Himinbjorg** as the new umbrella name. The repository rename can proceed locally and at the Git remote, while trademark, registry and domain checks remain a separate non-legal clearance step.
