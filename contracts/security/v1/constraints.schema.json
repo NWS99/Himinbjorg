@@ -3,6 +3,8 @@
   "$id": "urn:himinbjorg:security:v1:constraints",
   "title": "Bounded execution constraints",
   "type": "object", "additionalProperties": false,
+  "schema_version": "1.0.0",
+  "source_contract_digest": "c1cb5e367886e6b93b3843d6f7806178a9a583e197e6a6d30231997b15854830",
   "required": ["arguments", "working_directory", "environment_allowlist", "network_egress", "time_limit_seconds", "use_limit", "idempotency_key", "fencing_token"],
   "properties": {
     "arguments": {"type": "array", "items": {"type": "string"}},

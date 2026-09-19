@@ -1,10 +1,314 @@
 {
-  "fixture_version":"1.0.0", "agent_domain":"coding",
-  "cases":[
-    {"id":"coding-authorized","expected":"authorized","authority":{"schema_version":"1.0.0","decision":"ask","principal":{"id":"coding-worker-01","class":"cognition_worker"},"action":"workspace_write","canonical_resource":{"schema_version":"1.0.0","resource_type":"workspace","identity":"workspace:coding","identity_digest":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","generation":"1"},"constraints":{"arguments":["edit"],"working_directory":"/workspace/coding","environment_allowlist":[],"network_egress":[],"time_limit_seconds":60,"use_limit":1,"idempotency_key":"coding-001","fencing_token":"coding-fence-001"},"security_domain":{"schema_version":"1.0.0","domain":"coding","parent_domain":null},"provenance_requirements":{"schema_version":"1.0.0","minimum_class":"agent_derived","exposure":"X1","causal_digests":[],"taint_sticky":true},"policy_version":"1.0.0"},"capability":{"schema_version":"1.0.0","capability":"user_write","domain":"coding","resource":{"schema_version":"1.0.0","resource_type":"workspace","identity":"workspace:coding","identity_digest":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","generation":"1"},"authority_digest":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"}},
-    {"id":"coding-unauthorized-credential","expected":"unauthorized","authority":{"schema_version":"1.0.0","decision":"deny","principal":{"id":"coding-worker-01","class":"cognition_worker"},"action":"credential_activate","canonical_resource":{"schema_version":"1.0.0","resource_type":"secret_ref","identity":"opaque:slot","identity_digest":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","generation":"1"},"constraints":{"arguments":[],"working_directory":"/workspace/coding","environment_allowlist":[],"network_egress":[],"time_limit_seconds":10,"use_limit":1,"idempotency_key":"coding-002","fencing_token":"coding-fence-002"},"security_domain":{"schema_version":"1.0.0","domain":"coding","parent_domain":null},"provenance_requirements":{"schema_version":"1.0.0","minimum_class":"agent_derived","exposure":"X2","causal_digests":[],"taint_sticky":true},"policy_version":"1.0.0"},"capability":{"schema_version":"1.0.0","capability":"credential_activate","domain":"coding","resource":{"schema_version":"1.0.0","resource_type":"secret_ref","identity":"opaque:slot","identity_digest":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","generation":"1"},"authority_digest":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"}},
-    {"id":"coding-stale-workspace","expected":"stale","authority":{"schema_version":"1.0.0","decision":"deny","principal":{"id":"coding-worker-01","class":"cognition_worker"},"action":"workspace_write","canonical_resource":{"schema_version":"1.0.0","resource_type":"workspace","identity":"workspace:coding","identity_digest":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","generation":"0"},"constraints":{"arguments":[],"working_directory":"/workspace/coding","environment_allowlist":[],"network_egress":[],"time_limit_seconds":10,"use_limit":1,"idempotency_key":"coding-003","fencing_token":"coding-fence-003","pre_state_digest":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"},"security_domain":{"schema_version":"1.0.0","domain":"coding","parent_domain":null},"provenance_requirements":{"schema_version":"1.0.0","minimum_class":"agent_derived","exposure":"X1","causal_digests":[],"taint_sticky":true},"policy_version":"1.0.0"},"capability":{"schema_version":"1.0.0","capability":"user_write","domain":"coding","resource":{"schema_version":"1.0.0","resource_type":"workspace","identity":"workspace:coding","identity_digest":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","generation":"0"},"authority_digest":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"}},
-    {"id":"coding-replayed-idempotency","expected":"replayed","authority":{"schema_version":"1.0.0","decision":"deny","principal":{"id":"coding-worker-01","class":"cognition_worker"},"action":"workspace_write","canonical_resource":{"schema_version":"1.0.0","resource_type":"workspace","identity":"workspace:coding","identity_digest":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","generation":"1"},"constraints":{"arguments":[],"working_directory":"/workspace/coding","environment_allowlist":[],"network_egress":[],"time_limit_seconds":10,"use_limit":1,"idempotency_key":"coding-001","fencing_token":"coding-fence-001"},"security_domain":{"schema_version":"1.0.0","domain":"coding","parent_domain":null},"provenance_requirements":{"schema_version":"1.0.0","minimum_class":"agent_derived","exposure":"X1","causal_digests":[],"taint_sticky":true},"policy_version":"1.0.0"},"capability":{"schema_version":"1.0.0","capability":"user_write","domain":"coding","resource":{"schema_version":"1.0.0","resource_type":"workspace","identity":"workspace:coding","identity_digest":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","generation":"1"},"authority_digest":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"}},
-    {"id":"coding-ambiguous-default","expected":"ambiguous","authority":{"schema_version":"1.0.0","decision":"deny","principal":{"id":"coding-worker-01","class":"cognition_worker"},"action":"network_request","canonical_resource":{"schema_version":"1.0.0","resource_type":"network_destination","identity":"https://unknown.test:443","identity_digest":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","generation":"unknown"},"constraints":{"arguments":[],"working_directory":"/workspace/coding","environment_allowlist":[],"network_egress":[],"time_limit_seconds":10,"use_limit":1,"idempotency_key":"coding-005","fencing_token":"coding-fence-005"},"security_domain":{"schema_version":"1.0.0","domain":"coding","parent_domain":null},"provenance_requirements":{"schema_version":"1.0.0","minimum_class":"agent_derived","exposure":"X3","causal_digests":[],"taint_sticky":true},"policy_version":"1.0.0"},"capability":{"schema_version":"1.0.0","capability":"network_access","domain":"coding","resource":{"schema_version":"1.0.0","resource_type":"network_destination","identity":"https://unknown.test:443","identity_digest":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","generation":"unknown"},"authority_digest":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"}}
+  "fixture_version": "1.0.0",
+  "agent_domain": "coding",
+  "cases": [
+    {
+      "id": "coding-authorized",
+      "expected": "authorized",
+      "authority": {
+        "schema_version": "1.0.0",
+        "decision": "allow",
+        "principal": {
+          "id": "coding-worker-01",
+          "class": "cognition_worker"
+        },
+        "action": "workspace_write",
+        "canonical_resource": {
+          "schema_version": "1.0.0",
+          "resource_type": "workspace",
+          "identity": "workspace:coding",
+          "identity_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "generation": "1"
+        },
+        "constraints": {
+          "arguments": [
+            "edit"
+          ],
+          "working_directory": "/workspace/coding",
+          "environment_allowlist": [],
+          "network_egress": [],
+          "time_limit_seconds": 60,
+          "use_limit": 1,
+          "idempotency_key": "coding-001",
+          "fencing_token": "coding-fence-001"
+        },
+        "security_domain": {
+          "schema_version": "1.0.0",
+          "domain": "coding",
+          "parent_domain": null
+        },
+        "provenance_requirements": {
+          "schema_version": "1.0.0",
+          "minimum_class": "agent_derived",
+          "exposure": "X1",
+          "causal_digests": [],
+          "taint_sticky": true
+        },
+        "policy_version": "1.0.0"
+      },
+      "capability": {
+        "schema_version": "1.0.0",
+        "capability": "user_write",
+        "domain": "coding",
+        "resource": {
+          "schema_version": "1.0.0",
+          "resource_type": "workspace",
+          "identity": "workspace:coding",
+          "identity_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "generation": "1"
+        },
+        "authority_digest": "0be9e0a2db1b9508f297cb9e140527db5c1bd0764b113d6bb14259b737bae882"
+      },
+      "trusted_state": {
+        "trust": "authoritative",
+        "generation": "1",
+        "pre_state_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      }
+    },
+    {
+      "id": "coding-unauthorized-credential",
+      "expected": "unauthorized",
+      "authority": {
+        "schema_version": "1.0.0",
+        "decision": "deny",
+        "principal": {
+          "id": "coding-worker-01",
+          "class": "cognition_worker"
+        },
+        "action": "credential_activate",
+        "canonical_resource": {
+          "schema_version": "1.0.0",
+          "resource_type": "secret_ref",
+          "identity": "opaque:slot",
+          "identity_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "generation": "1"
+        },
+        "constraints": {
+          "arguments": [],
+          "working_directory": "/workspace/coding",
+          "environment_allowlist": [],
+          "network_egress": [],
+          "time_limit_seconds": 10,
+          "use_limit": 1,
+          "idempotency_key": "coding-002",
+          "fencing_token": "coding-fence-002"
+        },
+        "security_domain": {
+          "schema_version": "1.0.0",
+          "domain": "coding",
+          "parent_domain": null
+        },
+        "provenance_requirements": {
+          "schema_version": "1.0.0",
+          "minimum_class": "agent_derived",
+          "exposure": "X2",
+          "causal_digests": [],
+          "taint_sticky": true
+        },
+        "policy_version": "1.0.0"
+      },
+      "capability": {
+        "schema_version": "1.0.0",
+        "capability": "credential_activate",
+        "domain": "coding",
+        "resource": {
+          "schema_version": "1.0.0",
+          "resource_type": "secret_ref",
+          "identity": "opaque:slot",
+          "identity_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "generation": "1"
+        },
+        "authority_digest": "a8050b6bde21337e448c3bd5895ec655650c2732269af1953c78e4cce86df173"
+      },
+      "trusted_state": {
+        "trust": "authoritative",
+        "generation": "1",
+        "pre_state_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      }
+    },
+    {
+      "id": "coding-stale-workspace",
+      "expected": "stale",
+      "authority": {
+        "schema_version": "1.0.0",
+        "decision": "allow",
+        "principal": {
+          "id": "coding-worker-01",
+          "class": "cognition_worker"
+        },
+        "action": "workspace_write",
+        "canonical_resource": {
+          "schema_version": "1.0.0",
+          "resource_type": "workspace",
+          "identity": "workspace:coding",
+          "identity_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "generation": "1"
+        },
+        "constraints": {
+          "arguments": [],
+          "working_directory": "/workspace/coding",
+          "environment_allowlist": [],
+          "network_egress": [],
+          "time_limit_seconds": 10,
+          "use_limit": 1,
+          "idempotency_key": "coding-003",
+          "fencing_token": "coding-fence-003",
+          "pre_state_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        },
+        "security_domain": {
+          "schema_version": "1.0.0",
+          "domain": "coding",
+          "parent_domain": null
+        },
+        "provenance_requirements": {
+          "schema_version": "1.0.0",
+          "minimum_class": "agent_derived",
+          "exposure": "X1",
+          "causal_digests": [],
+          "taint_sticky": true
+        },
+        "policy_version": "1.0.0"
+      },
+      "capability": {
+        "schema_version": "1.0.0",
+        "capability": "user_write",
+        "domain": "coding",
+        "resource": {
+          "schema_version": "1.0.0",
+          "resource_type": "workspace",
+          "identity": "workspace:coding",
+          "identity_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "generation": "0"
+        },
+        "authority_digest": "998204832a6cb085d5c0003b13490d8c0159df727486c84b4d69f8d5021ec48e"
+      },
+      "trusted_state": {
+        "trust": "authoritative",
+        "generation": "1",
+        "pre_state_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      }
+    },
+    {
+      "id": "coding-replayed-idempotency",
+      "expected": "replayed",
+      "authority": {
+        "schema_version": "1.0.0",
+        "decision": "allow",
+        "principal": {
+          "id": "coding-worker-01",
+          "class": "cognition_worker"
+        },
+        "action": "workspace_write",
+        "canonical_resource": {
+          "schema_version": "1.0.0",
+          "resource_type": "workspace",
+          "identity": "workspace:coding",
+          "identity_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "generation": "1"
+        },
+        "constraints": {
+          "arguments": [],
+          "working_directory": "/workspace/coding",
+          "environment_allowlist": [],
+          "network_egress": [],
+          "time_limit_seconds": 10,
+          "use_limit": 1,
+          "idempotency_key": "coding-001",
+          "fencing_token": "coding-fence-001"
+        },
+        "security_domain": {
+          "schema_version": "1.0.0",
+          "domain": "coding",
+          "parent_domain": null
+        },
+        "provenance_requirements": {
+          "schema_version": "1.0.0",
+          "minimum_class": "agent_derived",
+          "exposure": "X1",
+          "causal_digests": [],
+          "taint_sticky": true
+        },
+        "policy_version": "1.0.0"
+      },
+      "capability": {
+        "schema_version": "1.0.0",
+        "capability": "user_write",
+        "domain": "coding",
+        "resource": {
+          "schema_version": "1.0.0",
+          "resource_type": "workspace",
+          "identity": "workspace:coding",
+          "identity_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "generation": "1"
+        },
+        "authority_digest": "665d9701d49a375308234b799c77320e64cb170fc95128dfad83b5ef18051955"
+      },
+      "trusted_state": {
+        "trust": "authoritative",
+        "generation": "1",
+        "pre_state_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      }
+    },
+    {
+      "id": "coding-ambiguous-default",
+      "expected": "ambiguous",
+      "authority": {
+        "schema_version": "1.0.0",
+        "decision": "allow",
+        "principal": {
+          "id": "coding-worker-01",
+          "class": "cognition_worker"
+        },
+        "action": "network_request",
+        "canonical_resource": {
+          "schema_version": "1.0.0",
+          "resource_type": "network_destination",
+          "identity": "https://unknown.test:443",
+          "identity_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "generation": "unknown"
+        },
+        "constraints": {
+          "arguments": [],
+          "working_directory": "/workspace/coding",
+          "environment_allowlist": [],
+          "network_egress": [],
+          "time_limit_seconds": 10,
+          "use_limit": 1,
+          "idempotency_key": "coding-005",
+          "fencing_token": "coding-fence-005"
+        },
+        "security_domain": {
+          "schema_version": "1.0.0",
+          "domain": "coding",
+          "parent_domain": null
+        },
+        "provenance_requirements": {
+          "schema_version": "1.0.0",
+          "minimum_class": "agent_derived",
+          "exposure": "X3",
+          "causal_digests": [],
+          "taint_sticky": true
+        },
+        "policy_version": "1.0.0"
+      },
+      "capability": {
+        "schema_version": "1.0.0",
+        "capability": "network_access",
+        "domain": "coding",
+        "resource": {
+          "schema_version": "1.0.0",
+          "resource_type": "network_destination",
+          "identity": "https://unknown.test:443",
+          "identity_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "generation": "unknown"
+        },
+        "authority_digest": "1bb4fc5a4274e29556583736dce913bbfae0c0a2b1f51880a9842ebe15a52a5f"
+      },
+      "trusted_state": {
+        "trust": "authoritative",
+        "generation": "1",
+        "pre_state_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      }
+    }
   ]
 }

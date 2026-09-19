@@ -1,5 +1,7 @@
 import hashlib
+import copy
 import json
+import shutil
 import tempfile
 import unittest
 from pathlib import Path
@@ -12,6 +14,7 @@ from validate_authority_schemas import (  # noqa: E402
     CAPABILITIES,
     ContractError,
     RESOURCE_TYPES,
+    authority_digest,
     evaluate_authority,
     load_json,
     stable_json,
@@ -44,6 +47,16 @@ class AuthoritySchemaTests(unittest.TestCase):
         value = {"source_contract_digest": self.digest, "capability": "host_read", "resource_type": "workspace", "security_domain": "coding", "policy_state": "allow"}
         value.update(changes)
         return value
+
+    def full_case(self, filename="research.json", index=0):
+        fixture = json.loads((ROOT / "tests/fixtures/security/v1" / filename).read_text(encoding="utf-8"))
+        case = fixture["cases"][index]
+        return {
+            "source_contract_digest": self.digest,
+            "authority": copy.deepcopy(case["authority"]),
+            "capability": copy.deepcopy(case["capability"]),
+            "agent_domain": fixture["agent_domain"],
+        }, copy.deepcopy(case["trusted_state"])
 
     def test_golden_schema_is_valid(self):
         validate_schema_artifact(self.schema(), "authority.schema.json", self.digest)
@@ -87,8 +100,19 @@ class AuthoritySchemaTests(unittest.TestCase):
         with self.assertRaisesRegex(ContractError, "resource vocabulary"):
             validate_schema_artifact(value, "authority.schema.json", self.digest)
 
-    def test_authorized_case_allows(self):
-        self.assertEqual(evaluate_authority(self.request(), digest=self.digest), "allow")
+    def test_type_accepts_string_or_string_array(self):
+        value = self.schema()
+        value["properties"]["nullable_note"] = {"type": ["string", "null"]}
+        validate_schema_artifact(value, "authority.schema.json", self.digest)
+
+    def test_schema_rejects_invalid_type_array(self):
+        value = self.schema()
+        value["properties"]["nullable_note"] = {"type": ["string", "string"]}
+        with self.assertRaisesRegex(ContractError, "unknown type"):
+            validate_schema_artifact(value, "authority.schema.json", self.digest)
+
+    def test_incomplete_legacy_request_denies(self):
+        self.assertEqual(evaluate_authority(self.request(), digest=self.digest), "deny")
 
     def test_unauthorized_case_denies(self):
         self.assertEqual(evaluate_authority(self.request(policy_state="deny"), digest=self.digest), "deny")
@@ -104,10 +128,87 @@ class AuthoritySchemaTests(unittest.TestCase):
         with self.assertRaisesRegex(ContractError, "communication"):
             evaluate_authority(self.request(communication_grants_authority=True), digest=self.digest)
 
-    def test_delegation_is_intersection(self):
-        parent = self.request(policy_state="allow")
-        self.assertEqual(evaluate_authority(self.request(policy_state="deny"), digest=self.digest, delegated=parent), "deny")
-        self.assertEqual(evaluate_authority(self.request(policy_state="allow"), digest=self.digest, delegated=self.request(policy_state="deny")), "deny")
+    def test_incomplete_generic_host_shell_request_denies(self):
+        request = self.request(capability="generic_host_shell", resource_type="process", security_domain="research")
+        self.assertEqual(evaluate_authority(request, digest=self.digest), "deny")
+
+    def test_full_path_requires_bound_authority_digest(self):
+        request, state = self.full_case()
+        self.assertEqual(evaluate_authority(request, digest=self.digest, replay_state=set(), freshness_context=state), "allow")
+        request["capability"]["authority_digest"] = "b" * 64
+        self.assertEqual(evaluate_authority(request, digest=self.digest, replay_state=set(), freshness_context=state), "deny")
+
+    def test_full_path_requires_replay_and_freshness_context(self):
+        request, state = self.full_case()
+        self.assertEqual(evaluate_authority(request, digest=self.digest, freshness_context=state), "deny")
+        self.assertEqual(evaluate_authority(request, digest=self.digest, replay_state=set()), "deny")
+
+    def test_full_path_replay_state_is_single_use(self):
+        request, state = self.full_case()
+        replay_state = set()
+        self.assertEqual(evaluate_authority(request, digest=self.digest, replay_state=replay_state, freshness_context=state), "allow")
+        self.assertEqual(evaluate_authority(request, digest=self.digest, replay_state=replay_state, freshness_context=state), "deny")
+
+    def test_consistent_old_worker_state_does_not_override_trusted_state(self):
+        request, state = self.full_case()
+        request["authority"]["canonical_resource"]["generation"] = "old"
+        request["capability"]["resource"]["generation"] = "old"
+        request["capability"]["authority_digest"] = authority_digest(request["authority"])
+        self.assertEqual(evaluate_authority(request, digest=self.digest, replay_state=set(), freshness_context=state), "deny")
+
+    def test_delegation_rejects_broader_release_child(self):
+        parent, state = self.full_case("coding.json", 0)
+        child = copy.deepcopy(parent)
+        child["authority"]["security_domain"]["domain"] = "release"
+        child["authority"]["action"] = "release"
+        child["capability"]["capability"] = "sandbox_shell"
+        child["authority"]["constraints"]["idempotency_key"] = "coding-child-001"
+        child["authority"]["constraints"]["fencing_token"] = "coding-child-fence-001"
+        child["capability"]["authority_digest"] = authority_digest(child["authority"])
+        self.assertEqual(evaluate_authority(child, digest=self.digest, delegated=parent, replay_state=set(), freshness_context=state), "deny")
+
+    def test_same_scope_delegation_is_allowed_as_intersection(self):
+        parent, state = self.full_case("research.json", 0)
+        child = copy.deepcopy(parent)
+        child["authority"]["constraints"]["idempotency_key"] = "research-child-001"
+        child["authority"]["constraints"]["fencing_token"] = "research-child-fence-001"
+        child["authority"]["parent_authority_digest"] = authority_digest(parent["authority"])
+        child["capability"]["authority_digest"] = authority_digest(child["authority"])
+        self.assertEqual(evaluate_authority(child, digest=self.digest, delegated=parent, replay_state=set(), freshness_context=state), "allow")
+
+    def test_action_capability_domain_product_relation_fails_closed(self):
+        request, state = self.full_case("host.json", 0)
+        request["authority"]["action"] = "release"
+        request["capability"]["authority_digest"] = authority_digest(request["authority"])
+        self.assertEqual(evaluate_authority(request, digest=self.digest, replay_state=set(), freshness_context=state), "deny")
+
+    def test_unreviewed_action_capability_relations_fail_closed(self):
+        for action in ("delete", "external_send", "publish", "model_request", "attest"):
+            with self.subTest(action=action):
+                request, state = self.full_case("research.json", 0)
+                request["authority"]["action"] = action
+                request["capability"]["authority_digest"] = authority_digest(request["authority"])
+                self.assertEqual(evaluate_authority(request, digest=self.digest, replay_state=set(), freshness_context=state), "deny")
+
+    def test_delegation_cannot_rewrite_sticky_provenance(self):
+        parent, state = self.full_case("research.json", 0)
+        child = copy.deepcopy(parent)
+        child["authority"]["constraints"]["idempotency_key"] = "research-child-provenance"
+        child["authority"]["constraints"]["fencing_token"] = "research-child-provenance-fence"
+        child["authority"]["parent_authority_digest"] = authority_digest(parent["authority"])
+        child["authority"]["provenance_requirements"]["exposure"] = "X2"
+        child["capability"]["authority_digest"] = authority_digest(child["authority"])
+        self.assertEqual(evaluate_authority(child, digest=self.digest, delegated=parent, replay_state=set(), freshness_context=state), "deny")
+
+    def test_missing_release_matrix_row_fails_closed(self):
+        request, state = self.full_case("coding.json", 0)
+        request["agent_domain"] = "release"
+        request["authority"]["security_domain"]["domain"] = "release"
+        request["authority"]["action"] = "release"
+        request["capability"]["domain"] = "release"
+        request["capability"]["capability"] = "sandbox_shell"
+        request["capability"]["authority_digest"] = authority_digest(request["authority"])
+        self.assertEqual(evaluate_authority(request, digest=self.digest, replay_state=set(), freshness_context=state), "deny")
 
     def test_bundle_requires_all_schemas_and_fixtures(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -116,20 +217,22 @@ class AuthoritySchemaTests(unittest.TestCase):
             fixtures = root / "fixtures"
             schemas.mkdir()
             fixtures.mkdir()
-            for name in ("authority.schema.json", "capability.schema.json", "canonical-resource.schema.json", "constraint.schema.json", "security-domain.schema.json", "provenance.schema.json"):
-                (schemas / name).write_text(json.dumps(self.schema()), encoding="utf-8")
-            fixture = {"id": "authorized", "expected_decision": "allow", "request": self.request()}
-            (fixtures / "authorized.json").write_text(json.dumps(fixture), encoding="utf-8")
+            for name in ("authority.schema.json", "capability.schema.json", "canonical-resource.schema.json", "constraints.schema.json", "principal.schema.json", "security-domain.schema.json", "provenance.schema.json"):
+                shutil.copy(ROOT / "contracts/security/v1" / name, schemas / name)
+            shutil.copy(ROOT / "tests/fixtures/security/v1/research.json", fixtures / "research.json")
             validate_bundle(schemas, fixtures, self.contract)
 
     def test_fixture_expected_policy_state_is_checked(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             schemas, fixtures = root / "schemas", root / "fixtures"
-            schemas.mkdir(); fixtures.mkdir()
-            for name in ("authority.schema.json", "capability.schema.json", "canonical-resource.schema.json", "constraint.schema.json", "security-domain.schema.json", "provenance.schema.json"):
-                (schemas / name).write_text(json.dumps(self.schema()), encoding="utf-8")
-            (fixtures / "bad.json").write_text(json.dumps({"id": "bad", "expected_decision": "allow", "request": self.request(policy_state="deny")}), encoding="utf-8")
+            schemas.mkdir()
+            fixtures.mkdir()
+            for name in ("authority.schema.json", "capability.schema.json", "canonical-resource.schema.json", "constraints.schema.json", "principal.schema.json", "security-domain.schema.json", "provenance.schema.json"):
+                shutil.copy(ROOT / "contracts/security/v1" / name, schemas / name)
+            fixture = json.loads((ROOT / "tests/fixtures/security/v1/research.json").read_text(encoding="utf-8"))
+            fixture["cases"][1]["expected"] = "authorized"
+            (fixtures / "research.json").write_text(json.dumps(fixture), encoding="utf-8")
             with self.assertRaisesRegex(ContractError, "expected allow"):
                 validate_bundle(schemas, fixtures, self.contract)
 

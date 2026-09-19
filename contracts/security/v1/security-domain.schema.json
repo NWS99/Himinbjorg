@@ -3,6 +3,8 @@
   "$id": "urn:himinbjorg:security:v1:security-domain",
   "title": "Security domain and delegation",
   "type": "object", "additionalProperties": false,
+  "schema_version": "1.0.0",
+  "source_contract_digest": "c1cb5e367886e6b93b3843d6f7806178a9a583e197e6a6d30231997b15854830",
   "required": ["schema_version", "domain", "parent_domain"],
   "properties": {
     "schema_version": {"const": "1.0.0"},

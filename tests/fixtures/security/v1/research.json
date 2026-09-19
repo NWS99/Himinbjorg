@@ -1,10 +1,323 @@
 {
-  "fixture_version": "1.0.0", "agent_domain": "research",
+  "fixture_version": "1.0.0",
+  "agent_domain": "research",
   "cases": [
-    {"id": "research-authorized", "expected": "authorized", "authority": {"schema_version":"1.0.0","decision":"allow","principal":{"id":"research-worker-01","class":"cognition_worker"},"action":"network_request","canonical_resource":{"schema_version":"1.0.0","resource_type":"network_destination","identity":"https://example.test:443","identity_digest":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","generation":"dns-1"},"constraints":{"arguments":["GET"],"working_directory":"/workspace/research","environment_allowlist":[],"network_egress":["https://example.test:443"],"time_limit_seconds":30,"use_limit":1,"idempotency_key":"research-001","fencing_token":"fence-001"},"security_domain":{"schema_version":"1.0.0","domain":"research","parent_domain":null},"provenance_requirements":{"schema_version":"1.0.0","minimum_class":"untrusted_external","exposure":"X3","causal_digests":[],"taint_sticky":true},"policy_version":"1.0.0"},"capability":{"schema_version":"1.0.0","capability":"network_access","domain":"research","resource":{"schema_version":"1.0.0","resource_type":"network_destination","identity":"https://example.test:443","identity_digest":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","generation":"dns-1"},"authority_digest":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"}},
-    {"id": "research-unauthorized-host", "expected": "unauthorized", "authority": {"schema_version":"1.0.0","decision":"deny","principal":{"id":"research-worker-01","class":"cognition_worker"},"action":"host_execute","canonical_resource":{"schema_version":"1.0.0","resource_type":"process","identity":"binary:tool","identity_digest":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","generation":"1"},"constraints":{"arguments":[],"working_directory":"/workspace/research","environment_allowlist":[],"network_egress":[],"time_limit_seconds":10,"use_limit":1,"idempotency_key":"research-002","fencing_token":"fence-002"},"security_domain":{"schema_version":"1.0.0","domain":"research","parent_domain":null},"provenance_requirements":{"schema_version":"1.0.0","minimum_class":"untrusted_external","exposure":"X3","causal_digests":[],"taint_sticky":true},"policy_version":"1.0.0"},"capability":{"schema_version":"1.0.0","capability":"host_exec","domain":"research","resource":{"schema_version":"1.0.0","resource_type":"process","identity":"binary:tool","identity_digest":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","generation":"1"},"authority_digest":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"}},
-    {"id": "research-stale-resource", "expected": "stale", "authority": {"schema_version":"1.0.0","decision":"allow","principal":{"id":"research-worker-01","class":"cognition_worker"},"action":"read","canonical_resource":{"schema_version":"1.0.0","resource_type":"artifact","identity":"sha256:old","identity_digest":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","generation":"old"},"constraints":{"arguments":[],"working_directory":"/workspace/research","environment_allowlist":[],"network_egress":[],"time_limit_seconds":10,"use_limit":1,"idempotency_key":"research-003","fencing_token":"fence-003","pre_state_digest":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"},"security_domain":{"schema_version":"1.0.0","domain":"research","parent_domain":null},"provenance_requirements":{"schema_version":"1.0.0","minimum_class":"untrusted_external","exposure":"X3","causal_digests":[],"taint_sticky":true},"policy_version":"1.0.0"},"capability":{"schema_version":"1.0.0","capability":"network_access","domain":"research","resource":{"schema_version":"1.0.0","resource_type":"artifact","identity":"sha256:old","identity_digest":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","generation":"old"},"authority_digest":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"}},
-    {"id": "research-replayed-warrant", "expected": "replayed", "authority": {"schema_version":"1.0.0","decision":"allow","principal":{"id":"research-worker-01","class":"cognition_worker"},"action":"network_request","canonical_resource":{"schema_version":"1.0.0","resource_type":"network_destination","identity":"https://example.test:443","identity_digest":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","generation":"dns-1"},"constraints":{"arguments":["GET"],"working_directory":"/workspace/research","environment_allowlist":[],"network_egress":["https://example.test:443"],"time_limit_seconds":30,"use_limit":1,"idempotency_key":"research-001","fencing_token":"fence-used"},"security_domain":{"schema_version":"1.0.0","domain":"research","parent_domain":null},"provenance_requirements":{"schema_version":"1.0.0","minimum_class":"untrusted_external","exposure":"X3","causal_digests":[],"taint_sticky":true},"policy_version":"1.0.0"},"capability":{"schema_version":"1.0.0","capability":"network_access","domain":"research","resource":{"schema_version":"1.0.0","resource_type":"network_destination","identity":"https://example.test:443","identity_digest":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","generation":"dns-1"},"authority_digest":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"}},
-    {"id": "research-ambiguous-policy", "expected": "ambiguous", "note": "unknown runtime policy is represented by a deny decision", "authority": {"schema_version":"1.0.0","decision":"deny","principal":{"id":"research-worker-01","class":"cognition_worker"},"action":"network_request","canonical_resource":{"schema_version":"1.0.0","resource_type":"network_destination","identity":"https://example.test:443","identity_digest":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","generation":"dns-unknown"},"constraints":{"arguments":["GET"],"working_directory":"/workspace/research","environment_allowlist":[],"network_egress":[],"time_limit_seconds":30,"use_limit":1,"idempotency_key":"research-005","fencing_token":"fence-005"},"security_domain":{"schema_version":"1.0.0","domain":"research","parent_domain":null},"provenance_requirements":{"schema_version":"1.0.0","minimum_class":"untrusted_external","exposure":"X4","causal_digests":[],"taint_sticky":true},"policy_version":"1.0.0"},"capability":{"schema_version":"1.0.0","capability":"network_access","domain":"research","resource":{"schema_version":"1.0.0","resource_type":"network_destination","identity":"https://example.test:443","identity_digest":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","generation":"dns-unknown"},"authority_digest":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"}}
+    {
+      "id": "research-authorized",
+      "expected": "authorized",
+      "authority": {
+        "schema_version": "1.0.0",
+        "decision": "allow",
+        "principal": {
+          "id": "research-worker-01",
+          "class": "cognition_worker"
+        },
+        "action": "network_request",
+        "canonical_resource": {
+          "schema_version": "1.0.0",
+          "resource_type": "network_destination",
+          "identity": "https://example.test:443",
+          "identity_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "generation": "dns-1"
+        },
+        "constraints": {
+          "arguments": [
+            "GET"
+          ],
+          "working_directory": "/workspace/research",
+          "environment_allowlist": [],
+          "network_egress": [
+            "https://example.test:443"
+          ],
+          "time_limit_seconds": 30,
+          "use_limit": 1,
+          "idempotency_key": "research-001",
+          "fencing_token": "fence-001"
+        },
+        "security_domain": {
+          "schema_version": "1.0.0",
+          "domain": "research",
+          "parent_domain": null
+        },
+        "provenance_requirements": {
+          "schema_version": "1.0.0",
+          "minimum_class": "untrusted_external",
+          "exposure": "X3",
+          "causal_digests": [],
+          "taint_sticky": true
+        },
+        "policy_version": "1.0.0"
+      },
+      "capability": {
+        "schema_version": "1.0.0",
+        "capability": "network_access",
+        "domain": "research",
+        "resource": {
+          "schema_version": "1.0.0",
+          "resource_type": "network_destination",
+          "identity": "https://example.test:443",
+          "identity_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "generation": "dns-1"
+        },
+        "authority_digest": "b81f3970667636a749eae80e9c1bf320d3d3febb79984c29dbfe88c7c6e8eb1d"
+      },
+      "trusted_state": {
+        "trust": "authoritative",
+        "generation": "dns-1",
+        "pre_state_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      }
+    },
+    {
+      "id": "research-unauthorized-host",
+      "expected": "unauthorized",
+      "authority": {
+        "schema_version": "1.0.0",
+        "decision": "deny",
+        "principal": {
+          "id": "research-worker-01",
+          "class": "cognition_worker"
+        },
+        "action": "host_execute",
+        "canonical_resource": {
+          "schema_version": "1.0.0",
+          "resource_type": "process",
+          "identity": "binary:tool",
+          "identity_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "generation": "1"
+        },
+        "constraints": {
+          "arguments": [],
+          "working_directory": "/workspace/research",
+          "environment_allowlist": [],
+          "network_egress": [],
+          "time_limit_seconds": 10,
+          "use_limit": 1,
+          "idempotency_key": "research-002",
+          "fencing_token": "fence-002"
+        },
+        "security_domain": {
+          "schema_version": "1.0.0",
+          "domain": "research",
+          "parent_domain": null
+        },
+        "provenance_requirements": {
+          "schema_version": "1.0.0",
+          "minimum_class": "untrusted_external",
+          "exposure": "X3",
+          "causal_digests": [],
+          "taint_sticky": true
+        },
+        "policy_version": "1.0.0"
+      },
+      "capability": {
+        "schema_version": "1.0.0",
+        "capability": "host_exec",
+        "domain": "research",
+        "resource": {
+          "schema_version": "1.0.0",
+          "resource_type": "process",
+          "identity": "binary:tool",
+          "identity_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "generation": "1"
+        },
+        "authority_digest": "97ed0ec8f82658ef15498559e2733019b2d52c147473f65fc2b5c35804834138"
+      },
+      "trusted_state": {
+        "trust": "authoritative",
+        "generation": "1",
+        "pre_state_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      }
+    },
+    {
+      "id": "research-stale-resource",
+      "expected": "stale",
+      "authority": {
+        "schema_version": "1.0.0",
+        "decision": "allow",
+        "principal": {
+          "id": "research-worker-01",
+          "class": "cognition_worker"
+        },
+        "action": "read",
+        "canonical_resource": {
+          "schema_version": "1.0.0",
+          "resource_type": "artifact",
+          "identity": "sha256:old",
+          "identity_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "generation": "dns-2"
+        },
+        "constraints": {
+          "arguments": [],
+          "working_directory": "/workspace/research",
+          "environment_allowlist": [],
+          "network_egress": [],
+          "time_limit_seconds": 10,
+          "use_limit": 1,
+          "idempotency_key": "research-003",
+          "fencing_token": "fence-003",
+          "pre_state_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        },
+        "security_domain": {
+          "schema_version": "1.0.0",
+          "domain": "research",
+          "parent_domain": null
+        },
+        "provenance_requirements": {
+          "schema_version": "1.0.0",
+          "minimum_class": "untrusted_external",
+          "exposure": "X3",
+          "causal_digests": [],
+          "taint_sticky": true
+        },
+        "policy_version": "1.0.0"
+      },
+      "capability": {
+        "schema_version": "1.0.0",
+        "capability": "network_access",
+        "domain": "research",
+        "resource": {
+          "schema_version": "1.0.0",
+          "resource_type": "artifact",
+          "identity": "sha256:old",
+          "identity_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "generation": "old"
+        },
+        "authority_digest": "5fc77ad93ba5603773a022f20575e408aaa8b48bd41a8191c1ffdf65a9b99d4a"
+      },
+      "trusted_state": {
+        "trust": "authoritative",
+        "generation": "dns-2",
+        "pre_state_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      }
+    },
+    {
+      "id": "research-replayed-warrant",
+      "expected": "replayed",
+      "authority": {
+        "schema_version": "1.0.0",
+        "decision": "allow",
+        "principal": {
+          "id": "research-worker-01",
+          "class": "cognition_worker"
+        },
+        "action": "network_request",
+        "canonical_resource": {
+          "schema_version": "1.0.0",
+          "resource_type": "network_destination",
+          "identity": "https://example.test:443",
+          "identity_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "generation": "dns-1"
+        },
+        "constraints": {
+          "arguments": [
+            "GET"
+          ],
+          "working_directory": "/workspace/research",
+          "environment_allowlist": [],
+          "network_egress": [
+            "https://example.test:443"
+          ],
+          "time_limit_seconds": 30,
+          "use_limit": 1,
+          "idempotency_key": "research-001",
+          "fencing_token": "fence-used"
+        },
+        "security_domain": {
+          "schema_version": "1.0.0",
+          "domain": "research",
+          "parent_domain": null
+        },
+        "provenance_requirements": {
+          "schema_version": "1.0.0",
+          "minimum_class": "untrusted_external",
+          "exposure": "X3",
+          "causal_digests": [],
+          "taint_sticky": true
+        },
+        "policy_version": "1.0.0"
+      },
+      "capability": {
+        "schema_version": "1.0.0",
+        "capability": "network_access",
+        "domain": "research",
+        "resource": {
+          "schema_version": "1.0.0",
+          "resource_type": "network_destination",
+          "identity": "https://example.test:443",
+          "identity_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "generation": "dns-1"
+        },
+        "authority_digest": "eb349b9684239a4d71f2ed55c4f4fa6b4617327985208f6bf056d2ae0632f713"
+      },
+      "trusted_state": {
+        "trust": "authoritative",
+        "generation": "dns-1",
+        "pre_state_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      }
+    },
+    {
+      "id": "research-ambiguous-policy",
+      "expected": "ambiguous",
+      "note": "unknown runtime policy is represented by a deny decision",
+      "authority": {
+        "schema_version": "1.0.0",
+        "decision": "allow",
+        "principal": {
+          "id": "research-worker-01",
+          "class": "cognition_worker"
+        },
+        "action": "network_request",
+        "canonical_resource": {
+          "schema_version": "1.0.0",
+          "resource_type": "network_destination",
+          "identity": "https://example.test:443",
+          "identity_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "generation": "dns-unknown"
+        },
+        "constraints": {
+          "arguments": [
+            "GET"
+          ],
+          "working_directory": "/workspace/research",
+          "environment_allowlist": [],
+          "network_egress": [],
+          "time_limit_seconds": 30,
+          "use_limit": 1,
+          "idempotency_key": "research-005",
+          "fencing_token": "fence-005"
+        },
+        "security_domain": {
+          "schema_version": "1.0.0",
+          "domain": "research",
+          "parent_domain": null
+        },
+        "provenance_requirements": {
+          "schema_version": "1.0.0",
+          "minimum_class": "untrusted_external",
+          "exposure": "X4",
+          "causal_digests": [],
+          "taint_sticky": true
+        },
+        "policy_version": "1.0.0"
+      },
+      "capability": {
+        "schema_version": "1.0.0",
+        "capability": "network_access",
+        "domain": "research",
+        "resource": {
+          "schema_version": "1.0.0",
+          "resource_type": "network_destination",
+          "identity": "https://example.test:443",
+          "identity_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "generation": "dns-unknown"
+        },
+        "authority_digest": "54635d887d815085c2c41ac9c0f4efe3839974bcbb14f4d5650c7ffff9944ede"
+      },
+      "trusted_state": {
+        "trust": "authoritative",
+        "generation": "dns-unknown",
+        "pre_state_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      }
+    }
   ]
 }

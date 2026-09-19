@@ -33,18 +33,23 @@ No command is verified.
 - **Scope:** `contracts/security/v1/`, `scripts/validate_security_contract.py`, `scripts/validate_threat_model.py`, `tests/security/`.
 - **Prerequisites:** Python 3 standard library.
 - **Last verified:** 2026-09-19 on N-109 working tree based at `cf67786`.
-- **Expected result:** Forty-five tests pass.
+- **Expected result:** Seventy-six tests pass.
 - **Known side effects:** Python may create ignored `__pycache__` directories.
 
 ### N-110 versioned security artifacts
 
 - **Command:** `python3 scripts/validate_security_artifacts.py`
-- **Purpose:** Validate versioned Authority, Capability, Canonical-Resource, Constraint, Security-Domain and Provenance artifacts plus stable Research/Coding/Host fixtures.
+- **Purpose:** Validate versioned Authority, Capability, Canonical-Resource, Constraints, Principal, Security-Domain and Provenance artifacts plus stable Research/Coding/Host fixtures.
 - **Scope:** `contracts/security/v1/*schema.json`, `scripts/validate_security_artifacts.py`, `tests/fixtures/security/v1/`.
 - **Prerequisites:** Python 3 standard library.
 - **Last verified:** 2026-09-19 on N-110 candidate.
 - **Expected result:** Prints `security artifacts valid: 3 fixtures` and exits zero.
 - **Known side effects:** None.
+
+- **Command:** `python3 scripts/validate_authority_schemas.py`
+- **Purpose:** Validate the complete seven-file schema bundle, top-level schema/digest bindings, authority-bound capability digests, trusted fixture state, replay single-use and fail-closed authorized/unauthorized/stale/replayed/ambiguous decisions.
+- **Scope:** `contracts/security/v1/authority.schema.json`, `capability.schema.json`, `canonical-resource.schema.json`, `constraints.schema.json`, `principal.schema.json`, `provenance.schema.json`, `security-domain.schema.json`, and `tests/fixtures/security/v1/`.
+- **Expected result:** Prints `authority schema bundle valid` and exits zero.
 
 ## Integration tests
 
