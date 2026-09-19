@@ -6,7 +6,7 @@ This document defines the vocabulary that later enforcement work must implement.
 
 ## Scope and system boundary
 
-Wardline is a local-first trusted control plane for replaceable coding-agent workers. The trusted Rust services own identity, policy, model access, scheduling, credentials, isolation, immutable verification, recovery and release decisions. Cognition workers, prompts, tool servers, external content and executed project code are untrusted inputs or components.
+Secure Agent Runtime is a local-first trusted control plane for replaceable coding-agent workers. The trusted Rust services own identity, policy, model access, scheduling, credentials, isolation, immutable verification, recovery and release decisions. Cognition workers, prompts, tool servers, external content and executed project code are untrusted inputs or components. “Wardline” remains a working repository name until N-102 is approved.
 
 The initial deployment assumes one local administrative domain. It does not claim protection from a compromised kernel or root administrator, malicious human-approved raw-secret consumer, or multi-tenant adversary.
 

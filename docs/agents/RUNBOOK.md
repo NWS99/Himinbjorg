@@ -33,7 +33,7 @@ No command is verified.
 - **Scope:** `contracts/security/v1/security-contract.json`, `scripts/validate_security_contract.py`, `tests/security/`.
 - **Prerequisites:** Python 3 standard library.
 - **Last verified:** 2026-09-19 on N-52 working tree based at `ec3831f`.
-- **Expected result:** Nine tests pass.
+- **Expected result:** Fourteen tests pass.
 - **Known side effects:** Python may create ignored `__pycache__` directories.
 
 ## Integration tests
@@ -42,7 +42,7 @@ No command is verified.
 
 ## Negative-security tests
 
-The security-contract unit-test command above includes negative cases for capability-as-authority, SecretRef-as-authority, union delegation, fail-open ambiguity, reviewer declassification and missing traceability ownership.
+The security-contract unit-test command above includes negative cases for capability-as-authority, SecretRef-as-authority, union delegation, fail-open ambiguity, reviewer declassification, missing or unknown traceability ownership, removed required vocabulary, weakened release semantics and incomplete capability-matrix cells.
 
 ## Fault/recovery tests
 

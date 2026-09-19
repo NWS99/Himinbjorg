@@ -69,6 +69,36 @@ class SecurityContractTests(unittest.TestCase):
         with self.assertRaisesRegex(ContractError, "invalid owner issue"):
             validate_contract(contract)
 
+    def test_required_action_cannot_be_deleted(self):
+        contract = self.mutated()
+        contract["action_classes"] = [item for item in contract["action_classes"] if item["id"] != "delete"]
+        with self.assertRaisesRegex(ContractError, "action vocabulary"):
+            validate_contract(contract)
+
+    def test_required_invariant_cannot_be_deleted(self):
+        contract = self.mutated()
+        contract["hard_invariants"] = contract["hard_invariants"][:-1]
+        with self.assertRaisesRegex(ContractError, "hard invariant catalog"):
+            validate_contract(contract)
+
+    def test_unknown_owner_issue_fails(self):
+        contract = self.mutated()
+        contract["hard_invariants"][0]["owner_issues"] = ["N-999999"]
+        with self.assertRaisesRegex(ContractError, "unknown owner issue"):
+            validate_contract(contract)
+
+    def test_release_semantics_cannot_be_weakened(self):
+        contract = self.mutated()
+        next(item for item in contract["action_classes"] if item["id"] == "release")["effect"] = "benign_read"
+        with self.assertRaisesRegex(ContractError, "release action semantics"):
+            validate_contract(contract)
+
+    def test_capability_matrix_requires_every_cell(self):
+        contract = self.mutated()
+        del contract["capability_matrix"][0]["host_read"]
+        with self.assertRaisesRegex(ContractError, "incomplete capability coverage"):
+            validate_contract(contract)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -2,6 +2,15 @@
   "contract_version": "1.0.0",
   "status": "frozen",
   "owner_issue": "N-52",
+  "canonical_sources": [
+    {"id": "SRC-OVERVIEW", "url": "https://app.notion.com/p/3de35e9a89fe8176ad5def4cf950eef8", "title": "Secure Agent Runtime — Architecture Overview"},
+    {"id": "SRC-SECURITY", "url": "https://app.notion.com/p/3de35e9a89fe81518099d6620ac6f2c2", "title": "Agent Security — Capability Broker & Tiered Isolation"},
+    {"id": "SRC-HARDENING", "url": "https://app.notion.com/p/3de35e9a89fe817b8ef3ee3dd814528c", "title": "Security Review & Hardening Plan"},
+    {"id": "SRC-CONTROL", "url": "https://app.notion.com/p/3df35e9a89fe8167bb29fec6e1294a00", "title": "Trusted Control Plane"},
+    {"id": "SRC-CREDENTIAL", "url": "https://app.notion.com/p/3df35e9a89fe81929c41e2853a06eb75", "title": "Human-Owned Credential Use Broker"},
+    {"id": "SRC-EXECUTION", "url": "https://app.notion.com/p/3de35e9a89fe81eeab0dfe2753d502d3", "title": "Execution Authority"}
+  ],
+  "known_owner_issues": ["N-11", "N-14", "N-15", "N-18", "N-20", "N-25", "N-26", "N-27", "N-28", "N-29", "N-39", "N-45", "N-46", "N-47", "N-50", "N-51", "N-54", "N-56", "N-57", "N-58", "N-59", "N-60", "N-61", "N-62", "N-63", "N-65", "N-66", "N-67", "N-68", "N-73", "N-76", "N-78", "N-84", "N-86", "N-87", "N-88", "N-90", "N-91", "N-92", "N-93", "N-95", "N-96", "N-97", "N-98", "N-100"],
   "authority_vector": [
     "principal",
     "action",
@@ -70,6 +79,12 @@
     {"id": "privileged_action", "default_policy": "deny", "hard_boundary": "separate_privileged_helper"},
     {"id": "generic_host_shell", "default_policy": "deny", "hard_boundary": "forbidden"}
   ],
+  "capability_matrix": [
+    {"domain": "research", "sandbox_shell": "ask", "host_exec": "deny", "host_read": "deny", "user_write": "deny", "network_access": "allow", "credential_activate": "deny", "privileged_action": "deny", "generic_host_shell": "deny"},
+    {"domain": "coding", "sandbox_shell": "ask", "host_exec": "deny", "host_read": "deny", "user_write": "ask", "network_access": "ask", "credential_activate": "deny", "privileged_action": "deny", "generic_host_shell": "deny"},
+    {"domain": "host", "sandbox_shell": "deny", "host_exec": "ask", "host_read": "ask", "user_write": "ask", "network_access": "ask", "credential_activate": "deny", "privileged_action": "ask", "generic_host_shell": "deny"},
+    {"domain": "credential_consumer", "sandbox_shell": "deny", "host_exec": "deny", "host_read": "deny", "user_write": "deny", "network_access": "ask", "credential_activate": "ask", "privileged_action": "deny", "generic_host_shell": "deny"}
+  ],
   "security_domains": [
     {"id": "research", "execution": "isolated", "network": "policy_bounded", "host_access": "none", "secrets": "none"},
     {"id": "coding", "execution": "isolation_backend", "network": "deny_by_default", "host_access": "workspace_only", "secrets": "none"},
@@ -90,6 +105,48 @@
     "gate_effect": "exact_verified_claim_only",
     "declassification": "typed_deterministic_rule_only"
   },
+  "classification_semantics": {
+    "exposure_aggregation": "maximum_of_registry_baseline_and_all_causal_inputs",
+    "consequence_aggregation": "maximum_possible_effect_after_constraints",
+    "dynamic_rule": "runtime_context_may_raise_but_never_lower_registry_baselines",
+    "risk_rule": "deterministic_function_of_risk_inputs_not_requester_label",
+    "provenance_rank_is_not_exposure": true,
+    "examples": [
+      {"id": "CLASS-001", "input": "trusted_local_source_read", "exposure": "X1", "consequence": "C0", "risk": "P0"},
+      {"id": "CLASS-002", "input": "untrusted_repository_build_in_isolation", "exposure": "X3", "consequence": "C1", "risk": "P1"},
+      {"id": "CLASS-003", "input": "external_identity_bearing_send_from_mixed_context", "exposure": "X2", "consequence": "C3", "risk": "P3"},
+      {"id": "CLASS-004", "input": "credentialed_production_effect", "exposure": "X2", "consequence": "C4", "risk": "P4"}
+    ]
+  },
+  "assets": [
+    {"id": "authority_state", "security_property": "non_amplification"},
+    {"id": "policy_and_run_constitution", "security_property": "versioned_digest_bound"},
+    {"id": "secret_material", "security_property": "non_reveal"},
+    {"id": "provider_credentials", "security_property": "gateway_custody"},
+    {"id": "workspace_and_candidates", "security_property": "ownership_and_immutability"},
+    {"id": "provenance_and_attestations", "security_property": "causal_integrity"},
+    {"id": "audit_and_recovery_state", "security_property": "durable_reconcilable"},
+    {"id": "release_authority", "security_property": "separate_controller"}
+  ],
+  "input_classes": [
+    {"id": "web", "default_provenance": "untrusted_external"},
+    {"id": "external_repository", "default_provenance": "untrusted_external"},
+    {"id": "pdf_or_document", "default_provenance": "untrusted_external"},
+    {"id": "mcp_or_tool_result", "default_provenance": "agent_derived"},
+    {"id": "local_file", "default_provenance": "agent_derived"},
+    {"id": "authenticated_human_input", "default_provenance": "user_authorized"},
+    {"id": "controlled_gate_result", "default_provenance": "tool_verified"}
+  ],
+  "attacker_positions": [
+    {"id": "malicious_external_source", "trusted": false},
+    {"id": "compromised_cognition_worker", "trusted": false},
+    {"id": "hostile_container_workload", "trusted": false},
+    {"id": "compromised_tool_or_mcp_server", "trusted": false},
+    {"id": "same_uid_local_process", "trusted": false},
+    {"id": "malicious_dependency_or_image", "trusted": false},
+    {"id": "compromised_approved_consumer", "trusted": false, "treatment": "explicit_non_goal_for_raw_secret_visibility"},
+    {"id": "compromised_broker_or_kernel", "trusted": false, "treatment": "explicit_non_goal"}
+  ],
   "canonical_resource_requirements": [
     "stable_resource_type",
     "normalized_identity",
@@ -154,21 +211,29 @@
     {"id": "control_plane_to_release", "protocol": "signed_release_proposal", "fail_mode": "closed", "owner_issues": ["N-50", "N-67", "N-68"]}
   ],
   "hard_invariants": [
-    {"id": "INV-001", "statement": "Security decisions are enforced outside cognition workers.", "owner_issues": ["N-18", "N-54", "N-58"]},
-    {"id": "INV-002", "statement": "Communication transfers information and never authority.", "owner_issues": ["N-14", "N-15", "N-54"]},
-    {"id": "INV-003", "statement": "Delegated and composed authority is an intersection and can only narrow.", "owner_issues": ["N-20", "N-56", "N-57"]},
-    {"id": "INV-004", "statement": "No requester or producer can approve its own authority-bearing action or candidate.", "owner_issues": ["N-11", "N-63", "N-95"]},
-    {"id": "INV-005", "statement": "A capability, approval, risk class, SecretRef or message is never sufficient authority by itself.", "owner_issues": ["N-51", "N-54", "N-73"]},
-    {"id": "INV-006", "statement": "Ambiguous principal, resource, provenance, policy or execution state fails closed.", "owner_issues": ["N-25", "N-54", "N-97", "N-98"]},
-    {"id": "INV-007", "statement": "Privileged effects require an exact bounded decision and complete single-use warrant.", "owner_issues": ["N-58", "N-62", "N-95"]},
-    {"id": "INV-008", "statement": "Review, gates and integration bind to an immutable candidate and exact digests.", "owner_issues": ["N-63", "N-66", "N-100"]},
-    {"id": "INV-009", "statement": "Cognition workers remain replaceable, unprivileged and outside the trusted computing base.", "owner_issues": ["N-18", "N-27", "N-28"]},
-    {"id": "INV-010", "statement": "Original provenance remains sticky; verification creates only a narrow exact claim.", "owner_issues": ["N-15", "N-47", "N-59", "N-60"]},
-    {"id": "INV-011", "statement": "Workers never hold provider credentials or call providers outside ModelGateway.", "owner_issues": ["N-46", "N-90", "N-91"]},
-    {"id": "INV-012", "statement": "Secret custody and human administration remain outside swarmd and worker processes.", "owner_issues": ["N-39", "N-73", "N-76"]},
-    {"id": "INV-013", "statement": "Credential activation requires an exact human grant and verified destination-bound consumer.", "owner_issues": ["N-73", "N-76", "N-78"]},
-    {"id": "INV-014", "statement": "Post-dispatch ambiguity becomes UNKNOWN and is reconciled without blind retry.", "owner_issues": ["N-25", "N-95", "N-98"]},
-    {"id": "INV-015", "statement": "Policy, identity, runtime and supply-chain inputs are versioned and digest-bound.", "owner_issues": ["N-26", "N-45", "N-47"]}
+    {"id": "INV-001", "statement": "Security decisions are enforced outside cognition workers.", "source_ref": "SRC-OVERVIEW#core-invariants", "owner_issues": ["N-18", "N-54", "N-58"]},
+    {"id": "INV-002", "statement": "Communication transfers information and never authority.", "source_ref": "SRC-OVERVIEW#core-invariants", "owner_issues": ["N-14", "N-15", "N-54"]},
+    {"id": "INV-003", "statement": "Delegated and composed authority is an intersection and can only narrow.", "source_ref": "SRC-OVERVIEW#dynamic-agent-creation", "owner_issues": ["N-20", "N-56", "N-57"]},
+    {"id": "INV-004", "statement": "No requester or producer can approve its own authority-bearing action or candidate.", "source_ref": "SRC-EXECUTION#reviewer-independence", "owner_issues": ["N-11", "N-63", "N-95"]},
+    {"id": "INV-005", "statement": "A capability, approval, risk class, SecretRef or message is never sufficient authority by itself.", "source_ref": "SRC-CONTROL#policy-pipeline", "owner_issues": ["N-51", "N-54", "N-73"]},
+    {"id": "INV-006", "statement": "Ambiguous principal, resource, provenance, policy or execution state fails closed.", "source_ref": "SRC-OVERVIEW#core-invariants", "owner_issues": ["N-25", "N-54", "N-97", "N-98"]},
+    {"id": "INV-007", "statement": "Privileged effects require an exact bounded decision and complete single-use warrant.", "source_ref": "SRC-HARDENING#complete-warrants", "owner_issues": ["N-58", "N-62", "N-95"]},
+    {"id": "INV-008", "statement": "Review, gates and integration bind to an immutable candidate and exact digests.", "source_ref": "SRC-HARDENING#seal-before-validating", "owner_issues": ["N-63", "N-66", "N-100"]},
+    {"id": "INV-009", "statement": "Cognition workers remain replaceable, unprivileged and outside the trusted computing base.", "source_ref": "SRC-CONTROL#decision", "owner_issues": ["N-18", "N-27", "N-28"]},
+    {"id": "INV-010", "statement": "Original provenance remains sticky; verification creates only a narrow exact claim.", "source_ref": "SRC-CONTROL#verification-provenance-and-declassification", "owner_issues": ["N-15", "N-47", "N-59", "N-60"]},
+    {"id": "INV-011", "statement": "Workers never hold provider credentials or call providers outside ModelGateway.", "source_ref": "SRC-CONTROL#brokered-model-access", "owner_issues": ["N-46", "N-90", "N-91"]},
+    {"id": "INV-012", "statement": "Secret custody and human administration remain outside swarmd and worker processes.", "source_ref": "SRC-CREDENTIAL#two-non-overlapping-planes", "owner_issues": ["N-39", "N-73", "N-76"]},
+    {"id": "INV-013", "statement": "Credential activation requires an exact human grant and verified destination-bound consumer.", "source_ref": "SRC-CREDENTIAL#acceptance-invariants", "owner_issues": ["N-73", "N-76", "N-78"]},
+    {"id": "INV-014", "statement": "Post-dispatch ambiguity becomes UNKNOWN and is reconciled without blind retry.", "source_ref": "SRC-HARDENING#complete-warrants", "owner_issues": ["N-25", "N-95", "N-98"]},
+    {"id": "INV-015", "statement": "Policy, identity, runtime and supply-chain inputs are versioned and digest-bound.", "source_ref": "SRC-HARDENING#secure-the-supply-chain", "owner_issues": ["N-26", "N-45", "N-47"]},
+    {"id": "INV-016", "statement": "Control-plane IPC is authenticated, audience-bound and revocable.", "source_ref": "SRC-CONTROL#workload-identity-and-ipc", "owner_issues": ["N-45", "N-87", "N-88"]},
+    {"id": "INV-017", "statement": "Workers cannot issue authoritative PromptManifests, gate results or provenance attestations.", "source_ref": "SRC-CONTROL#hard-invariants", "owner_issues": ["N-46", "N-47", "N-93"]},
+    {"id": "INV-018", "statement": "Active-run policy cannot mutate without a recorded RunConstitution transition.", "source_ref": "SRC-CONTROL#audit-and-run-constitution", "owner_issues": ["N-25", "N-29", "N-47"]},
+    {"id": "INV-019", "statement": "Audit events are hash-chained and covered by signed checkpoints.", "source_ref": "SRC-HARDENING#release-blockers", "owner_issues": ["N-47", "N-92", "N-93"]},
+    {"id": "INV-020", "statement": "Safe mode and deterministic recovery are exercised before sensitive profiles are enabled.", "source_ref": "SRC-HARDENING#release-blockers", "owner_issues": ["N-25", "N-97", "N-98"]},
+    {"id": "INV-021", "statement": "Coding workers never receive staging or production credentials.", "source_ref": "SRC-CONTROL#release-boundary", "owner_issues": ["N-50", "N-67", "N-68"]},
+    {"id": "INV-022", "statement": "Agents cannot select a credentialed executable, credential slot or destination.", "source_ref": "SRC-CREDENTIAL#authority-model", "owner_issues": ["N-73", "N-76", "N-78"]},
+    {"id": "INV-023", "statement": "Credential-bearing consumers cannot retain arbitrary egress or share the agent OS identity.", "source_ref": "SRC-HARDENING#release-blockers", "owner_issues": ["N-73", "N-78", "N-86"]}
   ],
   "attacker_paths": [
     {"id": "THREAT-001", "name": "cross_agent_prompt_injection", "controls": ["sticky_provenance", "communication_no_authority", "runtime_policy"], "owner_issues": ["N-15", "N-59", "N-60"]},
@@ -182,7 +247,32 @@
     {"id": "THREAT-009", "name": "same_uid_process_or_proc_leakage", "controls": ["separate_identity", "sealed_delivery", "redaction"], "owner_issues": ["N-73", "N-84", "N-86"]},
     {"id": "THREAT-010", "name": "worker_direct_provider_access", "controls": ["model_gateway", "deny_direct_egress", "broker_credentials"], "owner_issues": ["N-46", "N-90", "N-91"]},
     {"id": "THREAT-011", "name": "crash_retry_duplicate_effect", "controls": ["unknown_state", "idempotency", "reconciliation"], "owner_issues": ["N-25", "N-97", "N-98"]},
-    {"id": "THREAT-012", "name": "supply_chain_or_runtime_drift", "controls": ["content_addressed_manifest", "attestation", "pre_execution_verification"], "owner_issues": ["N-26", "N-47", "N-93"]}
+    {"id": "THREAT-012", "name": "supply_chain_or_runtime_drift", "controls": ["content_addressed_manifest", "attestation", "pre_execution_verification"], "owner_issues": ["N-26", "N-47", "N-93"]},
+    {"id": "THREAT-013", "name": "requester_risk_level_manipulation", "controls": ["runtime_owned_classification", "risk_inputs", "cannot_lower_baseline"], "owner_issues": ["N-54", "N-58", "N-95"]},
+    {"id": "THREAT-014", "name": "agent_visible_secret_administration_surface", "controls": ["separate_admin_socket", "workload_api_non_reveal", "filesystem_permissions"], "owner_issues": ["N-39", "N-73", "N-86"]},
+    {"id": "THREAT-015", "name": "credential_broker_socket_discovery_or_relay_substitution", "controls": ["distinct_sockets", "peer_credentials", "verified_relay_identity"], "owner_issues": ["N-73", "N-84", "N-86"]},
+    {"id": "THREAT-016", "name": "binding_lease_replay_or_transfer", "controls": ["run_binding", "audience_binding", "expiry", "revocation"], "owner_issues": ["N-76", "N-78", "N-86"]},
+    {"id": "THREAT-017", "name": "weak_tty_or_human_authentication", "controls": ["protected_tty", "rate_limit", "lockout", "upgradeable_authenticator"], "owner_issues": ["N-39", "N-73", "N-86"]}
+  ],
+  "release_blockers": [
+    {"id": "RB-001", "statement": "No privileged in-process cognition.", "source_ref": "SRC-HARDENING#release-blockers", "owner_issues": ["N-27", "N-28"]},
+    {"id": "RB-002", "statement": "No taint clearing by prompt-injection detection.", "source_ref": "SRC-HARDENING#release-blockers", "owner_issues": ["N-59", "N-60"]},
+    {"id": "RB-003", "statement": "No execution without a complete single-use warrant.", "source_ref": "SRC-HARDENING#release-blockers", "owner_issues": ["N-58", "N-95"]},
+    {"id": "RB-004", "statement": "No gate may inspect mutable state.", "source_ref": "SRC-HARDENING#release-blockers", "owner_issues": ["N-63", "N-66", "N-100"]},
+    {"id": "RB-005", "statement": "Secrets and arbitrary egress cannot coexist.", "source_ref": "SRC-HARDENING#release-blockers", "owner_issues": ["N-73", "N-78"]},
+    {"id": "RB-006", "statement": "Post-dispatch ambiguity cannot cause blind retry.", "source_ref": "SRC-HARDENING#release-blockers", "owner_issues": ["N-95", "N-98"]},
+    {"id": "RB-007", "statement": "Policy, config and runtime artifacts are digest-bound and reproducible.", "source_ref": "SRC-HARDENING#release-blockers", "owner_issues": ["N-26", "N-47"]},
+    {"id": "RB-008", "statement": "Safe mode and recovery are exercised.", "source_ref": "SRC-HARDENING#release-blockers", "owner_issues": ["N-97", "N-98"]},
+    {"id": "RB-009", "statement": "Workers cannot directly reach model providers or hold credentials.", "source_ref": "SRC-HARDENING#release-blockers", "owner_issues": ["N-90", "N-91"]},
+    {"id": "RB-010", "statement": "Control-plane IPC has authenticated revocable identity.", "source_ref": "SRC-HARDENING#release-blockers", "owner_issues": ["N-87", "N-88"]},
+    {"id": "RB-011", "statement": "Workers cannot self-issue authoritative manifests, gates or provenance.", "source_ref": "SRC-HARDENING#release-blockers", "owner_issues": ["N-47", "N-93"]},
+    {"id": "RB-012", "statement": "Audit events are hash-chained with signed checkpoints.", "source_ref": "SRC-HARDENING#release-blockers", "owner_issues": ["N-92", "N-93"]},
+    {"id": "RB-013", "statement": "Verified claims are exact and never broadly clear provenance.", "source_ref": "SRC-HARDENING#release-blockers", "owner_issues": ["N-47", "N-93"]},
+    {"id": "RB-014", "statement": "Coding workers cannot receive production credentials.", "source_ref": "SRC-HARDENING#release-blockers", "owner_issues": ["N-50", "N-67"]},
+    {"id": "RB-015", "statement": "Agent endpoints cannot reveal, mutate, enumerate, export or delete secrets.", "source_ref": "SRC-HARDENING#release-blockers", "owner_issues": ["N-73", "N-76"]},
+    {"id": "RB-016", "statement": "SecretRef activation requires exact grant and verified consumer.", "source_ref": "SRC-HARDENING#release-blockers", "owner_issues": ["N-76", "N-78"]},
+    {"id": "RB-017", "statement": "Agents cannot choose credential executable, slot or destination.", "source_ref": "SRC-HARDENING#release-blockers", "owner_issues": ["N-73", "N-76"]},
+    {"id": "RB-018", "statement": "Credentialed consumers lack arbitrary egress and separate OS identity.", "source_ref": "SRC-HARDENING#release-blockers", "owner_issues": ["N-78", "N-86"]}
   ],
   "security_goals": [
     "least_authority_per_principal_and_run",

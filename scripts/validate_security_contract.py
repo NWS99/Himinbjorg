@@ -20,6 +20,12 @@ EXPECTED_VECTOR = [
     "provenance_requirements",
     "policy_version",
 ]
+REQUIRED_ACTIONS = {"read", "workspace_write", "sandbox_execute", "host_execute", "network_request", "external_send", "publish", "delete", "credential_activate", "model_request", "attest", "release"}
+REQUIRED_CAPABILITIES = {"sandbox_shell", "host_exec", "host_read", "user_write", "network_access", "credential_activate", "privileged_action", "generic_host_shell"}
+REQUIRED_DOMAINS = {"research", "coding", "host", "credential_consumer"}
+REQUIRED_INVARIANTS = {f"INV-{index:03d}" for index in range(1, 24)}
+REQUIRED_THREATS = {f"THREAT-{index:03d}" for index in range(1, 18)}
+REQUIRED_BLOCKERS = {f"RB-{index:03d}" for index in range(1, 19)}
 
 
 class ContractError(ValueError):
@@ -37,11 +43,19 @@ def require_unique(items: list[dict[str, Any]], field: str, section: str) -> Non
     require(len(values) == len(set(values)), f"{section}: duplicate {field}")
 
 
-def require_owner_issues(items: list[dict[str, Any]], section: str) -> None:
+def require_owner_issues(items: list[dict[str, Any]], section: str, known: set[str]) -> None:
     for item in items:
         owners = item.get("owner_issues")
         require(isinstance(owners, list) and owners, f"{section}/{item.get('id')}: missing owner_issues")
         require(all(isinstance(issue, str) and ISSUE_RE.fullmatch(issue) for issue in owners), f"{section}/{item.get('id')}: invalid owner issue")
+        require(set(owners).issubset(known), f"{section}/{item.get('id')}: unknown owner issue")
+
+
+def require_source_refs(items: list[dict[str, Any]], section: str, source_ids: set[str]) -> None:
+    for item in items:
+        source_ref = item.get("source_ref")
+        require(isinstance(source_ref, str) and "#" in source_ref, f"{section}/{item.get('id')}: missing source_ref")
+        require(source_ref.split("#", 1)[0] in source_ids, f"{section}/{item.get('id')}: unknown source_ref")
 
 
 def validate_contract(contract: dict[str, Any]) -> None:
@@ -59,7 +73,7 @@ def validate_contract(contract: dict[str, Any]) -> None:
     for key in ("communication_grants_authority", "capability_is_authority", "approval_is_authority", "secret_ref_is_authority", "risk_class_is_authority"):
         require(semantics.get(key) is False, f"{key} must be false")
 
-    for section in ("principal_classes", "action_classes", "resource_types", "capability_classes", "security_domains", "provenance_classes", "exposure_levels", "consequence_levels", "risk_levels", "trust_boundaries", "hard_invariants", "attacker_paths"):
+    for section in ("canonical_sources", "principal_classes", "action_classes", "resource_types", "capability_classes", "security_domains", "provenance_classes", "exposure_levels", "consequence_levels", "risk_levels", "trust_boundaries", "hard_invariants", "attacker_paths", "release_blockers", "assets", "input_classes", "attacker_positions"):
         items = contract.get(section)
         require(isinstance(items, list) and items, f"{section} must be a non-empty list")
         require_unique(items, "id", section)
@@ -68,23 +82,47 @@ def validate_contract(contract: dict[str, Any]) -> None:
     require([item["id"] for item in contract["consequence_levels"]] == [f"C{i}" for i in range(5)], "consequence levels must be C0-C4")
     require([item["id"] for item in contract["risk_levels"]] == [f"P{i}" for i in range(5)], "risk levels must be P0-P4")
 
+    require({item["id"] for item in contract["action_classes"]} == REQUIRED_ACTIONS, "action vocabulary is incomplete or expanded without review")
+    require({item["id"] for item in contract["capability_classes"]} == REQUIRED_CAPABILITIES, "capability vocabulary is incomplete or expanded without review")
+    require({item["id"] for item in contract["hard_invariants"]} == REQUIRED_INVARIANTS, "hard invariant catalog is incomplete or expanded without review")
+    require({item["id"] for item in contract["attacker_paths"]} == REQUIRED_THREATS, "attacker path catalog is incomplete or expanded without review")
+    require({item["id"] for item in contract["release_blockers"]} == REQUIRED_BLOCKERS, "release blocker catalog is incomplete or expanded without review")
+
     capability_defaults = {item["id"]: item.get("default_policy") for item in contract["capability_classes"]}
     require(capability_defaults.get("generic_host_shell") == "deny", "generic host shell must default deny")
     require(capability_defaults.get("privileged_action") == "deny", "privileged actions must default deny")
     require(capability_defaults.get("credential_activate") == "deny", "credential activation must default deny")
 
-    for section in ("trust_boundaries", "hard_invariants", "attacker_paths"):
-        require_owner_issues(contract[section], section)
+    matrix = contract.get("capability_matrix")
+    require(isinstance(matrix, list) and len(matrix) == len(REQUIRED_DOMAINS), "capability matrix must cover every required domain once")
+    require({row.get("domain") for row in matrix} == REQUIRED_DOMAINS, "capability matrix domain coverage is incomplete")
+    for row in matrix:
+        require(set(row) == {"domain"} | REQUIRED_CAPABILITIES, f"capability matrix/{row.get('domain')}: incomplete capability coverage")
+        require(all(row[capability] in {"allow", "ask", "deny"} for capability in REQUIRED_CAPABILITIES), f"capability matrix/{row.get('domain')}: invalid decision")
+        require(row["generic_host_shell"] == "deny", f"capability matrix/{row.get('domain')}: generic host shell must deny")
 
-    invariant_ids = {item["id"] for item in contract["hard_invariants"]}
-    require({"INV-002", "INV-003", "INV-005", "INV-006", "INV-012", "INV-013"}.issubset(invariant_ids), "required authority and credential invariants are missing")
-    threat_ids = {item["id"] for item in contract["attacker_paths"]}
-    require({f"THREAT-{i:03d}" for i in range(1, 13)}.issubset(threat_ids), "required attacker paths are missing")
+    known = set(contract.get("known_owner_issues", []))
+    require(known and all(ISSUE_RE.fullmatch(issue) for issue in known), "known_owner_issues is invalid")
+    for section in ("trust_boundaries", "hard_invariants", "attacker_paths", "release_blockers"):
+        require_owner_issues(contract[section], section, known)
+
+    source_ids = {source["id"] for source in contract["canonical_sources"]}
+    require_source_refs(contract["hard_invariants"], "hard_invariants", source_ids)
+    require_source_refs(contract["release_blockers"], "release_blockers", source_ids)
 
     provenance = contract.get("provenance_semantics", {})
     require(provenance.get("llm_may_clear_taint") is False, "LLMs must not clear taint")
     require(provenance.get("review_may_clear_taint") is False, "review must not clear taint")
     require(provenance.get("gate_effect") == "exact_verified_claim_only", "gates may create only exact verified claims")
+
+    classification = contract.get("classification_semantics", {})
+    require(classification.get("provenance_rank_is_not_exposure") is True, "provenance rank must not be treated as exposure")
+    require(classification.get("dynamic_rule") == "runtime_context_may_raise_but_never_lower_registry_baselines", "dynamic classification must only raise baselines")
+    require(len(classification.get("examples", [])) >= 4, "classification examples are incomplete")
+
+    action_effects = {item["id"]: item.get("effect") for item in contract["action_classes"]}
+    require(action_effects.get("release") == "staging_or_production_change", "release action semantics changed")
+    require(action_effects.get("delete") == "destructive_mutation", "delete action semantics changed")
 
     for key in ("canonical_resource_requirements", "constraint_classes", "risk_inputs", "security_goals", "non_goals"):
         values = contract.get(key)
