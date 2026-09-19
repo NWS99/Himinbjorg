@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:himinbjorg:security:v1:principal",
+  "title": "Authenticated principal",
+  "type": "object", "additionalProperties": false,
+  "required": ["id", "class"],
+  "properties": {
+    "id": {"type": "string", "minLength": 1},
+    "class": {"type": "string", "enum": ["human", "control_plane_service", "cognition_worker", "execution_adapter", "gate_runner", "credential_broker", "release_controller"]}
+  }
+}

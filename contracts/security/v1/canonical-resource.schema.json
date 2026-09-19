@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:himinbjorg:security:v1:canonical-resource",
+  "title": "Canonical resource identity",
+  "type": "object", "additionalProperties": false,
+  "required": ["schema_version", "resource_type", "identity", "identity_digest", "generation"],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "resource_type": {"type": "string", "enum": ["artifact", "filesystem_path", "workspace", "process", "network_destination", "external_identity", "secret_ref", "consumer_profile", "model_provider", "policy", "candidate", "release_target"]},
+    "identity": {"type": "string", "minLength": 1},
+    "identity_digest": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "generation": {"type": "string", "minLength": 1}
+  }
+}

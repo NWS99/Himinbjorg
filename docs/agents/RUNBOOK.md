@@ -33,8 +33,18 @@ No command is verified.
 - **Scope:** `contracts/security/v1/`, `scripts/validate_security_contract.py`, `scripts/validate_threat_model.py`, `tests/security/`.
 - **Prerequisites:** Python 3 standard library.
 - **Last verified:** 2026-09-19 on N-109 working tree based at `cf67786`.
-- **Expected result:** Forty tests pass.
+- **Expected result:** Forty-five tests pass.
 - **Known side effects:** Python may create ignored `__pycache__` directories.
+
+### N-110 versioned security artifacts
+
+- **Command:** `python3 scripts/validate_security_artifacts.py`
+- **Purpose:** Validate versioned Authority, Capability, Canonical-Resource, Constraint, Security-Domain and Provenance artifacts plus stable Research/Coding/Host fixtures.
+- **Scope:** `contracts/security/v1/*schema.json`, `scripts/validate_security_artifacts.py`, `tests/fixtures/security/v1/`.
+- **Prerequisites:** Python 3 standard library.
+- **Last verified:** 2026-09-19 on N-110 candidate.
+- **Expected result:** Prints `security artifacts valid: 3 fixtures` and exits zero.
+- **Known side effects:** None.
 
 ## Integration tests
 

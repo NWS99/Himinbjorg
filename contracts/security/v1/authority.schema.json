@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:himinbjorg:security:v1:authority",
+  "title": "Versioned authority decision",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "decision", "principal", "action", "canonical_resource", "constraints", "security_domain", "provenance_requirements", "policy_version"],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "decision": {"enum": ["allow", "ask", "deny"]},
+    "principal": {"$ref": "urn:himinbjorg:security:v1:principal"},
+    "action": {"type": "string", "enum": ["read", "workspace_write", "sandbox_execute", "host_execute", "network_request", "external_send", "publish", "delete", "credential_activate", "model_request", "attest", "release"]},
+    "canonical_resource": {"$ref": "urn:himinbjorg:security:v1:canonical-resource"},
+    "constraints": {"$ref": "urn:himinbjorg:security:v1:constraints"},
+    "security_domain": {"$ref": "urn:himinbjorg:security:v1:security-domain"},
+    "provenance_requirements": {"$ref": "urn:himinbjorg:security:v1:provenance"},
+    "policy_version": {"const": "1.0.0"},
+    "parent_authority_digest": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+  }
+}

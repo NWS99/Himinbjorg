@@ -76,6 +76,21 @@ A resource resolver must produce stable typed identity. Filesystem resources res
 
 Constraints are first-class parts of authority, including exact arguments, executable or image digest, working directory, environment allowlist, mounts, network egress, secret handles, time/use/budget limits, idempotency key, fencing token and pre-state digest. An executor cannot silently discard a constraint.
 
+### Versioned enforcement artifacts (N-110)
+
+The v1 implementation vocabulary is split into strict, closed-world schemas under
+`contracts/security/v1/`: `authority`, `capability`, `canonical-resource`,
+`constraints`, `security-domain`, `provenance`, and `principal`. Every artifact
+binds `schema_version` and policy version to `1.0.0`; unknown fields and versions
+are rejected. Canonical resources carry a typed identity digest and generation.
+Constraints carry exact arguments, working directory, egress, limits, idempotency
+and fencing data. Provenance is sticky and communication never grants authority.
+
+The stable fixtures in `tests/fixtures/security/v1/` cover Research, Coding and
+Host agents. Each domain includes authorized, unauthorized, stale, replayed and
+ambiguous cases. Ambiguous or unknown runtime state is represented by a deny
+decision; it is never interpreted as an implicit allow.
+
 The action vocabulary distinguishes reads, scoped workspace writes, sandbox and host execution, network requests, external sends, publish, delete, credential activation, model calls, attestations and releases. These actions are not interchangeable. In particular, `send`, `publish`, `delete` and `release` cannot inherit permission from a generic network or write capability.
 
 The initial capability vocabulary includes `sandbox_shell`, structured `host_exec`, scoped `host_read`, `user_write`, network access, credential activation and privileged actions. All except isolated sandbox execution default deny. A generic host shell is explicitly forbidden; a denylist around an unrestricted shell is safety guidance, not a security boundary.

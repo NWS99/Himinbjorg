@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:himinbjorg:security:v1:provenance",
+  "title": "Sticky provenance requirements",
+  "type": "object", "additionalProperties": false,
+  "required": ["schema_version", "minimum_class", "exposure", "causal_digests", "taint_sticky"],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "minimum_class": {"type": "string", "enum": ["user_authorized", "tool_verified", "agent_derived", "untrusted_external"]},
+    "exposure": {"type": "string", "enum": ["X0", "X1", "X2", "X3", "X4"]},
+    "causal_digests": {"type": "array", "items": {"type": "string", "pattern": "^[a-f0-9]{64}$"}, "uniqueItems": true},
+    "taint_sticky": {"const": true}
+  }
+}

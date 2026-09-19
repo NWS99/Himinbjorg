@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:himinbjorg:security:v1:constraints",
+  "title": "Bounded execution constraints",
+  "type": "object", "additionalProperties": false,
+  "required": ["arguments", "working_directory", "environment_allowlist", "network_egress", "time_limit_seconds", "use_limit", "idempotency_key", "fencing_token"],
+  "properties": {
+    "arguments": {"type": "array", "items": {"type": "string"}},
+    "executable_digest": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "working_directory": {"type": "string", "minLength": 1},
+    "environment_allowlist": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+    "mounts": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+    "network_egress": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+    "secret_handles": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+    "time_limit_seconds": {"type": "integer", "minimum": 1},
+    "use_limit": {"type": "integer", "minimum": 1},
+    "budget": {"type": "integer", "minimum": 0},
+    "idempotency_key": {"type": "string", "minLength": 1},
+    "fencing_token": {"type": "string", "minLength": 1},
+    "pre_state_digest": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+  }
+}

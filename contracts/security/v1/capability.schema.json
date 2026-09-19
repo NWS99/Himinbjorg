@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:himinbjorg:security:v1:capability",
+  "title": "Versioned capability request",
+  "type": "object", "additionalProperties": false,
+  "required": ["schema_version", "capability", "domain", "resource", "authority_digest"],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "capability": {"type": "string", "enum": ["sandbox_shell", "host_exec", "host_read", "user_write", "network_access", "credential_activate", "privileged_action", "generic_host_shell"]},
+    "domain": {"type": "string", "enum": ["research", "coding", "host", "credential_consumer", "release"]},
+    "resource": {"$ref": "urn:himinbjorg:security:v1:canonical-resource"},
+    "authority_digest": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+  }
+}

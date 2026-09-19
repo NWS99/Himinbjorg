@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:himinbjorg:security:v1:security-domain",
+  "title": "Security domain and delegation",
+  "type": "object", "additionalProperties": false,
+  "required": ["schema_version", "domain", "parent_domain"],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "domain": {"type": "string", "enum": ["research", "coding", "host", "credential_consumer", "release"]},
+    "parent_domain": {"type": ["string", "null"], "enum": ["research", "coding", "host", null]}
+  }
+}
