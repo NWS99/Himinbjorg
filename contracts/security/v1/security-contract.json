@@ -92,6 +92,18 @@
     {"id": "credential_consumer", "execution": "verified_consumer", "network": "destination_bound", "host_access": "none", "secrets": "sealed_delivery_only"},
     {"id": "release", "execution": "release_controller", "network": "release_target_only", "host_access": "none", "secrets": "controller_custodied"}
   ],
+  "security_domain_delegation": {
+    "rule": "child_domain_must_be_same_or_stricter_and_authority_still_intersects",
+    "allowed_transitions": [
+      {"parent": "research", "child": "research"},
+      {"parent": "coding", "child": "coding"},
+      {"parent": "coding", "child": "research"},
+      {"parent": "host", "child": "host"},
+      {"parent": "host", "child": "coding"},
+      {"parent": "host", "child": "research"}
+    ],
+    "non_delegable_domains": ["credential_consumer", "release"]
+  },
   "provenance_classes": [
     {"id": "user_authorized", "rank": 0},
     {"id": "tool_verified", "rank": 1},
@@ -132,8 +144,8 @@
     {"id": "web", "default_provenance": "untrusted_external"},
     {"id": "external_repository", "default_provenance": "untrusted_external"},
     {"id": "pdf_or_document", "default_provenance": "untrusted_external"},
-    {"id": "mcp_or_tool_result", "default_provenance": "agent_derived"},
-    {"id": "local_file", "default_provenance": "agent_derived"},
+    {"id": "mcp_or_tool_result", "default_provenance": "untrusted_external"},
+    {"id": "local_file", "default_provenance": "untrusted_external", "note": "May be raised only from authenticated provenance metadata, never filename or location alone."},
     {"id": "authenticated_human_input", "default_provenance": "user_authorized"},
     {"id": "controlled_gate_result", "default_provenance": "tool_verified"}
   ],

@@ -7,7 +7,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "scripts"))
 
-from validate_security_contract import ContractError, validate_contract  # noqa: E402
+from validate_security_contract import ContractError, validate_contract, validate_lock  # noqa: E402
 
 
 class SecurityContractTests(unittest.TestCase):
@@ -20,6 +20,9 @@ class SecurityContractTests(unittest.TestCase):
 
     def test_golden_contract_is_valid(self):
         validate_contract(self.contract)
+
+    def test_golden_contract_matches_review_lock(self):
+        validate_lock(ROOT / "contracts/security/v1/security-contract.json", ROOT / "contracts/security/v1/security-contract.sha256")
 
     def test_capability_cannot_become_authority(self):
         contract = self.mutated()
@@ -97,6 +100,36 @@ class SecurityContractTests(unittest.TestCase):
         contract = self.mutated()
         del contract["capability_matrix"][0]["host_read"]
         with self.assertRaisesRegex(ContractError, "incomplete capability coverage"):
+            validate_contract(contract)
+
+    def test_mcp_result_cannot_be_promoted_by_default(self):
+        contract = self.mutated()
+        next(item for item in contract["input_classes"] if item["id"] == "mcp_or_tool_result")["default_provenance"] = "user_authorized"
+        with self.assertRaisesRegex(ContractError, "input provenance defaults"):
+            validate_contract(contract)
+
+    def test_credential_activation_cannot_default_allow(self):
+        contract = self.mutated()
+        next(row for row in contract["capability_matrix"] if row["domain"] == "credential_consumer")["credential_activate"] = "allow"
+        with self.assertRaisesRegex(ContractError, "credential consumer activation"):
+            validate_contract(contract)
+
+    def test_domain_delegation_cannot_expand(self):
+        contract = self.mutated()
+        contract["security_domain_delegation"]["allowed_transitions"].append({"parent": "research", "child": "host"})
+        with self.assertRaisesRegex(ContractError, "security-domain delegation"):
+            validate_contract(contract)
+
+    def test_classification_example_cannot_downgrade(self):
+        contract = self.mutated()
+        next(item for item in contract["classification_semantics"]["examples"] if item["id"] == "CLASS-004")["risk"] = "P0"
+        with self.assertRaisesRegex(ContractError, "classification examples"):
+            validate_contract(contract)
+
+    def test_authority_invariant_cannot_invert(self):
+        contract = self.mutated()
+        next(item for item in contract["hard_invariants"] if item["id"] == "INV-005")["statement"] = "A SecretRef alone is sufficient authority."
+        with self.assertRaisesRegex(ContractError, "INV-005"):
             validate_contract(contract)
 
 

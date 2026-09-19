@@ -57,6 +57,8 @@ EffectiveChildAuthority =
 
 No union is permitted. Two individually limited agents cannot combine their rights into a stronger workflow. Information may be relayed; authority cannot.
 
+Security-domain delegation also follows an explicit partial order in the machine contract. Research remains Research; Coding may narrow to Coding or Research; Host may narrow to Host, Coding or Research. Credential-consumer and Release domains are non-delegable. This domain relation never replaces the full authority intersection.
+
 The following are inputs or evidence and are never sufficient authority alone:
 
 - capability or tool name;
@@ -134,6 +136,8 @@ The machine-readable catalog defines twelve required paths:
 12. dependency, image, policy or runtime drift.
 
 Each path has named controls and owning Linear issues in the contract. N-53 will bind these identifiers to executable CI evidence; missing ownership must fail validation.
+
+The N-52 validator checks owner references against the frozen reviewed owner catalog. Live Linear existence, current status and stale-reference detection require connector access and deliberately belong to N-53; N-52 does not claim that an internally listed issue has been live-resolved during an offline validation run.
 
 ## Trust/data flow
 

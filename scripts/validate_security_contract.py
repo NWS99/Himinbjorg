@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import re
 import sys
@@ -26,6 +27,29 @@ REQUIRED_DOMAINS = {"research", "coding", "host", "credential_consumer"}
 REQUIRED_INVARIANTS = {f"INV-{index:03d}" for index in range(1, 24)}
 REQUIRED_THREATS = {f"THREAT-{index:03d}" for index in range(1, 18)}
 REQUIRED_BLOCKERS = {f"RB-{index:03d}" for index in range(1, 19)}
+EXPECTED_INPUT_DEFAULTS = {
+    "web": "untrusted_external",
+    "external_repository": "untrusted_external",
+    "pdf_or_document": "untrusted_external",
+    "mcp_or_tool_result": "untrusted_external",
+    "local_file": "untrusted_external",
+    "authenticated_human_input": "user_authorized",
+    "controlled_gate_result": "tool_verified",
+}
+EXPECTED_DOMAIN_TRANSITIONS = {
+    ("research", "research"),
+    ("coding", "coding"),
+    ("coding", "research"),
+    ("host", "host"),
+    ("host", "coding"),
+    ("host", "research"),
+}
+EXPECTED_CLASSIFICATION_EXAMPLES = {
+    "CLASS-001": ("X1", "C0", "P0"),
+    "CLASS-002": ("X3", "C1", "P1"),
+    "CLASS-003": ("X2", "C3", "P3"),
+    "CLASS-004": ("X2", "C4", "P4"),
+}
 
 
 class ContractError(ValueError):
@@ -100,6 +124,16 @@ def validate_contract(contract: dict[str, Any]) -> None:
         require(set(row) == {"domain"} | REQUIRED_CAPABILITIES, f"capability matrix/{row.get('domain')}: incomplete capability coverage")
         require(all(row[capability] in {"allow", "ask", "deny"} for capability in REQUIRED_CAPABILITIES), f"capability matrix/{row.get('domain')}: invalid decision")
         require(row["generic_host_shell"] == "deny", f"capability matrix/{row.get('domain')}: generic host shell must deny")
+    credential_row = next(row for row in matrix if row["domain"] == "credential_consumer")
+    require(credential_row["credential_activate"] == "ask", "credential consumer activation must require policy/approval evaluation")
+
+    defaults = {item["id"]: item.get("default_provenance") for item in contract["input_classes"]}
+    require(defaults == EXPECTED_INPUT_DEFAULTS, "input provenance defaults changed")
+
+    domain_delegation = contract.get("security_domain_delegation", {})
+    transitions = {(item.get("parent"), item.get("child")) for item in domain_delegation.get("allowed_transitions", [])}
+    require(transitions == EXPECTED_DOMAIN_TRANSITIONS, "security-domain delegation relation changed")
+    require(set(domain_delegation.get("non_delegable_domains", [])) == {"credential_consumer", "release"}, "non-delegable domains changed")
 
     known = set(contract.get("known_owner_issues", []))
     require(known and all(ISSUE_RE.fullmatch(issue) for issue in known), "known_owner_issues is invalid")
@@ -118,11 +152,15 @@ def validate_contract(contract: dict[str, Any]) -> None:
     classification = contract.get("classification_semantics", {})
     require(classification.get("provenance_rank_is_not_exposure") is True, "provenance rank must not be treated as exposure")
     require(classification.get("dynamic_rule") == "runtime_context_may_raise_but_never_lower_registry_baselines", "dynamic classification must only raise baselines")
-    require(len(classification.get("examples", [])) >= 4, "classification examples are incomplete")
+    examples = {item["id"]: (item.get("exposure"), item.get("consequence"), item.get("risk")) for item in classification.get("examples", [])}
+    require(examples == EXPECTED_CLASSIFICATION_EXAMPLES, "classification examples changed")
 
     action_effects = {item["id"]: item.get("effect") for item in contract["action_classes"]}
     require(action_effects.get("release") == "staging_or_production_change", "release action semantics changed")
     require(action_effects.get("delete") == "destructive_mutation", "delete action semantics changed")
+
+    statements = {item["id"]: item.get("statement") for item in contract["hard_invariants"]}
+    require(statements.get("INV-005") == "A capability, approval, risk class, SecretRef or message is never sufficient authority by itself.", "INV-005 authority semantics changed")
 
     for key in ("canonical_resource_requirements", "constraint_classes", "risk_inputs", "security_goals", "non_goals"):
         values = contract.get(key)
@@ -137,11 +175,20 @@ def load_contract(path: Path) -> dict[str, Any]:
     return value
 
 
+def validate_lock(path: Path, lock_path: Path) -> None:
+    expected = lock_path.read_text(encoding="ascii").strip().split()[0]
+    actual = hashlib.sha256(path.read_bytes()).hexdigest()
+    require(expected == actual, "contract digest does not match reviewed lock")
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("path", nargs="?", type=Path, default=Path("contracts/security/v1/security-contract.json"))
+    parser.add_argument("--lock", type=Path)
     args = parser.parse_args()
     try:
+        lock_path = args.lock or args.path.with_suffix(".sha256")
+        validate_lock(args.path, lock_path)
         validate_contract(load_contract(args.path))
     except (OSError, json.JSONDecodeError, ContractError) as error:
         print(f"security contract invalid: {error}", file=sys.stderr)
