@@ -2,6 +2,7 @@
 """Validate the versioned threat-model projection against the frozen contract."""
 
 import argparse
+import hashlib
 import json
 import sys
 from pathlib import Path
@@ -13,6 +14,8 @@ class ThreatModelError(ValueError):
 
 
 EXPECTED_SOURCE = "contracts/security/v1/security-contract.json"
+EXPECTED_CONTRACT_RAW_SHA256 = "c1cb5e367886e6b93b3843d6f7806178a9a583e197e6a6d30231997b15854830"
+EXPECTED_CONTRACT_SEMANTIC_SHA256 = "407bceef5379989e47bbac872cbc5c3324694c469fffd8daf70a1c44221254c9"
 EXPECTED_ENFORCEMENT_BOUNDARY = {
     "model_safety_policy": "advisory_input_only",
     "hard_security_enforcement": "trusted_control_plane_and_dedicated_brokers",
@@ -73,10 +76,24 @@ def load(path: Path) -> dict[str, Any]:
     return value
 
 
+def semantic_digest(value: dict[str, Any]) -> str:
+    canonical = json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode()
+    return hashlib.sha256(canonical).hexdigest()
+
+
+def validate_source_lock(contract_path: Path, lock_path: Path) -> None:
+    expected = lock_path.read_text(encoding="ascii").strip().split()[0]
+    require(expected == EXPECTED_CONTRACT_RAW_SHA256, "source contract lock does not name the reviewed N-52 digest")
+    actual = hashlib.sha256(contract_path.read_bytes()).hexdigest()
+    require(actual == expected, "source contract digest does not match reviewed lock")
+
+
 def validate(artifact: dict[str, Any], contract: dict[str, Any]) -> None:
     require(artifact.get("artifact_version") == "1.0.0", "artifact_version must be 1.0.0")
     require(artifact.get("source_contract") == EXPECTED_SOURCE, "source_contract must name the frozen contract")
     require(artifact.get("source_contract_version") == contract.get("contract_version"), "source contract version mismatch")
+    require(artifact.get("source_contract_sha256") == EXPECTED_CONTRACT_RAW_SHA256, "source contract digest binding changed")
+    require(semantic_digest(contract) == EXPECTED_CONTRACT_SEMANTIC_SHA256, "frozen contract semantic digest mismatch")
     require(artifact.get("status") == "review_required", "threat model must remain review_required until independently accepted")
     require(isinstance(artifact.get("purpose"), str) and artifact["purpose"], "purpose must be non-empty")
 
@@ -135,8 +152,10 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("artifact", nargs="?", type=Path, default=Path("contracts/security/v1/threat-model.json"))
     parser.add_argument("--contract", type=Path, default=Path("contracts/security/v1/security-contract.json"))
+    parser.add_argument("--contract-lock", type=Path)
     args = parser.parse_args()
     try:
+        validate_source_lock(args.contract, args.contract_lock or args.contract.with_suffix(".sha256"))
         validate(load(args.artifact), load(args.contract))
     except (OSError, json.JSONDecodeError, ThreatModelError, KeyError, TypeError) as error:
         print(f"threat model invalid: {error}", file=sys.stderr)

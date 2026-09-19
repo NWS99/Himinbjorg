@@ -3,6 +3,7 @@
   "status": "review_required",
   "source_contract": "contracts/security/v1/security-contract.json",
   "source_contract_version": "1.0.0",
+  "source_contract_sha256": "c1cb5e367886e6b93b3843d6f7806178a9a583e197e6a6d30231997b15854830",
   "purpose": "Explicit trust-boundary and capability projection for security-sensitive implementation work.",
   "security_goals": [
     "least_authority_per_principal_and_run",

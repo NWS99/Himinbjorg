@@ -7,7 +7,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "scripts"))
 
-from validate_threat_model import ThreatModelError, load, validate  # noqa: E402
+from validate_threat_model import ThreatModelError, load, validate, validate_source_lock  # noqa: E402
 
 
 class ThreatModelTests(unittest.TestCase):
@@ -22,11 +22,46 @@ class ThreatModelTests(unittest.TestCase):
     def test_golden_threat_model_is_valid(self):
         validate(self.artifact, self.contract)
 
+    def test_golden_source_contract_matches_review_lock(self):
+        validate_source_lock(
+            ROOT / "contracts/security/v1/security-contract.json",
+            ROOT / "contracts/security/v1/security-contract.sha256",
+        )
+
     def test_source_contract_cannot_be_redirected(self):
         artifact = self.mutated()
         artifact["source_contract"] = "other.json"
         with self.assertRaisesRegex(ThreatModelError, "source_contract"):
             validate(artifact, self.contract)
+
+    def test_source_contract_digest_binding_cannot_change(self):
+        artifact = self.mutated()
+        artifact["source_contract_sha256"] = "0" * 64
+        with self.assertRaisesRegex(ThreatModelError, "digest binding"):
+            validate(artifact, self.contract)
+
+    def test_coordinated_contract_and_projection_drift_fails(self):
+        mutations = (
+            lambda artifact, contract: (
+                artifact["security_goals"].__setitem__(0, "attacker_defined_goal"),
+                contract["security_goals"].__setitem__(0, "attacker_defined_goal"),
+            ),
+            lambda artifact, contract: (
+                artifact["capability_matrix"][0].__setitem__("network_access", "deny"),
+                contract["capability_matrix"][0].__setitem__("network_access", "deny"),
+            ),
+            lambda artifact, contract: (
+                artifact["attacker_paths"].__setitem__(0, "renamed_or_weakened_attack"),
+                contract["attacker_paths"][0].__setitem__("name", "renamed_or_weakened_attack"),
+            ),
+        )
+        for mutate in mutations:
+            with self.subTest(mutation=mutate):
+                artifact = self.mutated()
+                contract = copy.deepcopy(self.contract)
+                mutate(artifact, contract)
+                with self.assertRaisesRegex(ThreatModelError, "semantic digest"):
+                    validate(artifact, contract)
 
     def test_security_goals_cannot_be_removed(self):
         artifact = self.mutated()

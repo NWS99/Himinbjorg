@@ -33,7 +33,7 @@ No command is verified.
 - **Scope:** `contracts/security/v1/`, `scripts/validate_security_contract.py`, `scripts/validate_threat_model.py`, `tests/security/`.
 - **Prerequisites:** Python 3 standard library.
 - **Last verified:** 2026-09-19 on N-109 working tree based at `cf67786`.
-- **Expected result:** Thirty-seven tests pass.
+- **Expected result:** Forty tests pass.
 - **Known side effects:** Python may create ignored `__pycache__` directories.
 
 ## Integration tests
@@ -42,7 +42,7 @@ No command is verified.
 
 ## Negative-security tests
 
-The unit-test command above includes negative cases for capability-as-authority, SecretRef-as-authority, union delegation, fail-open ambiguity, reviewer declassification, missing or unknown traceability ownership, removed required vocabulary, weakened release semantics, incomplete capability-matrix cells, unsafe ingress provenance, credential activation, domain escalation, classification downgrade and inverted authority statements. N-109 additionally rejects source-contract redirection, missing goals or non-goals, principal drift, LLM-owned enforcement, hidden unresolved choices, trust-boundary drift or collapse, capability-owner drift, duplicate capabilities, missing or duplicate attacker paths and incomplete abuse-case coverage. The reviewed full contract is additionally bound by `security-contract.sha256`.
+The unit-test command above includes negative cases for capability-as-authority, SecretRef-as-authority, union delegation, fail-open ambiguity, reviewer declassification, missing or unknown traceability ownership, removed required vocabulary, weakened release semantics, incomplete capability-matrix cells, unsafe ingress provenance, credential activation, domain escalation, classification downgrade and inverted authority statements. N-109 additionally rejects source-contract redirection, raw or semantic source-contract digest drift, coordinated contract/projection drift, missing goals or non-goals, principal drift, LLM-owned enforcement, hidden unresolved choices, trust-boundary drift or collapse, capability-owner drift, duplicate capabilities, missing or duplicate attacker paths and incomplete abuse-case coverage. The reviewed full contract is additionally bound by `security-contract.sha256`.
 
 ## Fault/recovery tests
 
