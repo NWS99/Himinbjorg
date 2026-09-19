@@ -1,0 +1,88 @@
+{
+  "artifact_version": "1.0.0",
+  "status": "review_required",
+  "source_contract": "security-contract.json",
+  "source_contract_version": "1.0.0",
+  "purpose": "Explicit trust-boundary and capability projection for security-sensitive implementation work.",
+  "security_goals": [
+    "least_authority",
+    "fail_closed_decisions_and_recovery",
+    "sticky_provenance_without_authority_amplification",
+    "exact_effect_review_and_auditability",
+    "non_reveal_of_secrets_to_confined_agents",
+    "immutable_review_and_integration_targets"
+  ],
+  "non_goals": [
+    "compromised_kernel_or_root",
+    "malicious_human_approved_raw_secret_consumer",
+    "multi_tenant_isolation"
+  ],
+  "trust_boundaries": [
+    {
+      "id": "TB-001",
+      "name": "untrusted_input_to_cognition",
+      "from": ["web", "external_repository", "pdf", "mcp_result", "local_file"],
+      "to": ["cognition_worker"],
+      "enforcement_owner": "provenance_and_policy"
+    },
+    {
+      "id": "TB-002",
+      "name": "cognition_to_control_plane",
+      "from": ["cognition_worker"],
+      "to": ["trusted_control_plane"],
+      "enforcement_owner": "authenticated_ipc_and_policy"
+    },
+    {
+      "id": "TB-003",
+      "name": "control_plane_to_execution",
+      "from": ["trusted_control_plane"],
+      "to": ["isolation_backend", "typed_host_broker", "release_controller"],
+      "enforcement_owner": "pdp_pep_and_exact_warrant"
+    },
+    {
+      "id": "TB-004",
+      "name": "credential_administration_to_workload_activation",
+      "from": ["human_admin_plane"],
+      "to": ["credential_broker", "verified_consumer"],
+      "enforcement_owner": "credential_broker"
+    },
+    {
+      "id": "TB-005",
+      "name": "review_to_integration",
+      "from": ["independent_reviewer"],
+      "to": ["sealed_candidate", "release_controller"],
+      "enforcement_owner": "immutable_candidate_and_release_gate"
+    }
+  ],
+  "capability_matrix": [
+    {"domain": "research", "sandbox_shell": "ask", "host_exec": "deny", "host_read": "deny", "user_write": "deny", "network_access": "allow", "credential_activate": "deny", "privileged_action": "deny", "generic_host_shell": "deny"},
+    {"domain": "coding", "sandbox_shell": "ask", "host_exec": "deny", "host_read": "deny", "user_write": "ask", "network_access": "ask", "credential_activate": "deny", "privileged_action": "deny", "generic_host_shell": "deny"},
+    {"domain": "host", "sandbox_shell": "deny", "host_exec": "ask", "host_read": "ask", "user_write": "ask", "network_access": "ask", "credential_activate": "deny", "privileged_action": "ask", "generic_host_shell": "deny"},
+    {"domain": "credential_consumer", "sandbox_shell": "deny", "host_exec": "deny", "host_read": "deny", "user_write": "deny", "network_access": "ask", "credential_activate": "ask", "privileged_action": "deny", "generic_host_shell": "deny"}
+  ],
+  "capabilities": [
+    {"id": "sandbox_shell", "default_policy": "ask", "trust_boundary": "TB-003", "enforcement_owner": "isolation_backend"},
+    {"id": "host_exec", "default_policy": "deny", "trust_boundary": "TB-003", "enforcement_owner": "typed_host_broker"},
+    {"id": "host_read", "default_policy": "deny", "trust_boundary": "TB-003", "enforcement_owner": "canonical_scoped_reader"},
+    {"id": "user_write", "default_policy": "deny", "trust_boundary": "TB-003", "enforcement_owner": "pdp_pep"},
+    {"id": "network_access", "default_policy": "deny", "trust_boundary": "TB-003", "enforcement_owner": "destination_egress_policy"},
+    {"id": "credential_activate", "default_policy": "deny", "trust_boundary": "TB-004", "enforcement_owner": "credential_broker"},
+    {"id": "privileged_action", "default_policy": "deny", "trust_boundary": "TB-003", "enforcement_owner": "separate_privileged_helper"},
+    {"id": "generic_host_shell", "default_policy": "deny", "trust_boundary": "TB-003", "enforcement_owner": "forbidden"
+    }
+  ],
+  "attacker_paths": [
+    "prompt_injection_and_provenance_loss",
+    "capability_laundering_and_composition",
+    "self_review_or_reviewer_capture",
+    "approval_or_warrant_replay",
+    "resource_aliasing_and_toctou",
+    "secret_plus_arbitrary_egress",
+    "secret_reference_enumeration",
+    "consumer_binary_or_route_substitution",
+    "same_uid_process_or_log_leakage",
+    "direct_worker_to_provider_access",
+    "crash_retry_duplicate_external_effect",
+    "dependency_image_policy_or_runtime_drift"
+  ]
+}
