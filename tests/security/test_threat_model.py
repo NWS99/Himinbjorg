@@ -22,22 +22,102 @@ class ThreatModelTests(unittest.TestCase):
     def test_golden_threat_model_is_valid(self):
         validate(self.artifact, self.contract)
 
+    def test_source_contract_cannot_be_redirected(self):
+        artifact = self.mutated()
+        artifact["source_contract"] = "other.json"
+        with self.assertRaisesRegex(ThreatModelError, "source_contract"):
+            validate(artifact, self.contract)
+
+    def test_security_goals_cannot_be_removed(self):
+        artifact = self.mutated()
+        artifact["security_goals"] = artifact["security_goals"][:-1]
+        with self.assertRaisesRegex(ThreatModelError, "security_goals"):
+            validate(artifact, self.contract)
+
+    def test_non_goals_cannot_be_removed(self):
+        artifact = self.mutated()
+        artifact["non_goals"] = artifact["non_goals"][:-1]
+        with self.assertRaisesRegex(ThreatModelError, "non_goals"):
+            validate(artifact, self.contract)
+
+    def test_principal_catalog_cannot_drift(self):
+        artifact = self.mutated()
+        artifact["principal_classes"][0]["security_authority"] = "unbounded"
+        with self.assertRaisesRegex(ThreatModelError, "principal_classes"):
+            validate(artifact, self.contract)
+
+    def test_model_policy_cannot_become_hard_enforcement(self):
+        artifact = self.mutated()
+        artifact["enforcement_boundary"]["model_safety_policy"] = "authoritative"
+        with self.assertRaisesRegex(ThreatModelError, "hard enforcement"):
+            validate(artifact, self.contract)
+
+    def test_unresolved_choices_must_remain_explicit(self):
+        artifact = self.mutated()
+        del artifact["unresolved_architecture_choices"]
+        with self.assertRaisesRegex(ThreatModelError, "unresolved_architecture_choices"):
+            validate(artifact, self.contract)
+
+    def test_trust_boundary_catalog_cannot_drift(self):
+        artifact = self.mutated()
+        artifact["trust_boundaries"][0]["id"] = "invented_boundary"
+        with self.assertRaisesRegex(ThreatModelError, "catalog disagrees"):
+            validate(artifact, self.contract)
+
+    def test_trust_boundary_endpoints_cannot_drift(self):
+        artifact = self.mutated()
+        artifact["trust_boundaries"][0]["to"] = ["untrusted_sink"]
+        with self.assertRaisesRegex(ThreatModelError, "destination endpoint changed"):
+            validate(artifact, self.contract)
+
+    def test_credential_admin_and_activation_remain_separate(self):
+        artifact = self.mutated()
+        artifact["trust_boundaries"] = [
+            item for item in artifact["trust_boundaries"] if item["id"] != "human_to_credential_admin"
+        ]
+        with self.assertRaisesRegex(ThreatModelError, "catalog disagrees"):
+            validate(artifact, self.contract)
+
     def test_matrix_cannot_drift_from_frozen_contract(self):
         artifact = self.mutated()
         artifact["capability_matrix"][0]["network_access"] = "deny"
         with self.assertRaisesRegex(ThreatModelError, "capability matrix disagrees"):
             validate(artifact, self.contract)
 
-    def test_capability_must_name_enforcement_owner(self):
+    def test_capability_enforcement_owner_must_match_contract(self):
         artifact = self.mutated()
-        artifact["capabilities"][0]["enforcement_owner"] = ""
-        with self.assertRaisesRegex(ThreatModelError, "missing enforcement owner"):
+        artifact["capabilities"][0]["enforcement_owner"] = "llm"
+        with self.assertRaisesRegex(ThreatModelError, "enforcement owner disagrees"):
             validate(artifact, self.contract)
 
-    def test_unknown_capability_boundary_fails_closed(self):
+    def test_capability_boundary_must_be_canonical(self):
         artifact = self.mutated()
-        artifact["capabilities"][0]["trust_boundary"] = "TB-999"
-        with self.assertRaisesRegex(ThreatModelError, "unknown trust boundary"):
+        artifact["capabilities"][0]["trust_boundary"] = "control_plane_to_release"
+        with self.assertRaisesRegex(ThreatModelError, "canonical trust boundary changed"):
+            validate(artifact, self.contract)
+
+    def test_duplicate_capability_fails(self):
+        artifact = self.mutated()
+        artifact["capabilities"].append(copy.deepcopy(artifact["capabilities"][0]))
+        with self.assertRaisesRegex(ThreatModelError, "ids must be unique"):
+            validate(artifact, self.contract)
+
+    def test_attacker_path_cannot_be_removed(self):
+        artifact = self.mutated()
+        artifact["attacker_paths"] = artifact["attacker_paths"][:-1]
+        with self.assertRaisesRegex(ThreatModelError, "attacker path catalog"):
+            validate(artifact, self.contract)
+
+    def test_duplicate_attacker_path_fails(self):
+        artifact = self.mutated()
+        artifact["attacker_paths"].append(artifact["attacker_paths"][0])
+        with self.assertRaisesRegex(ThreatModelError, "attacker path catalog"):
+            validate(artifact, self.contract)
+
+    def test_required_abuse_case_mapping_cannot_drift(self):
+        artifact = self.mutated()
+        artifact["scope_coverage"]["confused_deputy_and_capability_composition"] = []
+        with self.assertRaisesRegex(ThreatModelError, "abuse-case coverage"):
             validate(artifact, self.contract)
 
 

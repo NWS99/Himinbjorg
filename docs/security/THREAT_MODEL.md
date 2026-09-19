@@ -120,7 +120,7 @@ An ambiguous failure after dispatch becomes `UNKNOWN`. It is reconciled from dur
 
 ## Attacker positions and abuse cases
 
-The machine-readable catalog defines twelve required paths:
+The machine-readable catalog defines seventeen required paths:
 
 1. cross-agent prompt injection and provenance loss;
 2. capability laundering and composition;
@@ -133,9 +133,18 @@ The machine-readable catalog defines twelve required paths:
 9. same-UID, `/proc`, environment, file, log or crash leakage;
 10. direct worker-to-provider access;
 11. crash/retry duplicate external effects;
-12. dependency, image, policy or runtime drift.
+12. dependency, image, policy or runtime drift;
+13. requester manipulation of runtime-owned risk classification;
+14. an agent-visible secret-administration surface;
+15. credential-broker socket discovery or relay substitution;
+16. binding-lease replay or transfer;
+17. weak TTY or human authentication.
 
-Each path has named controls and owning Linear issues in the contract. N-53 will bind these identifiers to executable CI evidence; missing ownership must fail validation.
+Each path has named controls and owning Linear issues in the contract. The versioned
+[`threat-model.json`](../../contracts/security/v1/threat-model.json) projection preserves
+the complete catalog, canonical trust boundaries and capability matrix for downstream
+implementation. N-53 will bind these identifiers to executable CI evidence; missing
+ownership must fail validation.
 
 The N-52 validator checks owner references against the frozen reviewed owner catalog. Live Linear existence, current status and stale-reference detection require connector access and deliberately belong to N-53; N-52 does not claim that an internally listed issue has been live-resolved during an offline validation run.
 
